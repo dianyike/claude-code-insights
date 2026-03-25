@@ -10,7 +10,7 @@ tools:
   - Read
   - Grep
   - Glob
-  - Bash
+  - Bash(git *)
   - Write
   - mcp__plugin_semgrep-plugin_semgrep__semgrep_scan
   - mcp__plugin_semgrep-plugin_semgrep__semgrep_scan_with_custom_rule

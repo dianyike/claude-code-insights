@@ -144,3 +144,4 @@ Where:
 - Codex `read-only` sandbox prevents it from running verification scripts — you must do that yourself
 - If Codex returns a threadId, save it. If conflict resolution needs follow-up, use `codex-reply` with that threadId instead of starting a new session (preserves context, saves tokens)
 - Semgrep findings JSON structure may vary between local scan and platform findings — normalize before comparing
+- **Iterate this section**: After each real review, append new gotchas here — false positive patterns you encountered, specific Codex hallucination tendencies (e.g., inventing middleware that doesn't exist), or Semgrep rules that consistently misfire on your codebase. This list should grow with use, not stay static
