@@ -19,6 +19,14 @@ Claude Code Skills 與 Subagent 的中文最佳實踐指南。
 
 兩份指南互相引用，建議都讀。
 
+## 實戰範例
+
+| 範例 | 說明 | 難度 |
+|------|------|------|
+| [examples/security-reviewer](examples/security-reviewer) | 雙重驗證安全審查 Subagent — Semgrep + Codex 交叉驗證，附信心分數與衝突處理 | 進階 |
+
+> **注意**：範例可直接用於生產環境，但涉及 MCP 多工具串接、Subagent + Skill 分層設計、交叉驗證協議等進階概念。建議先讀完兩份指南再使用。
+
 ## 快速導覽
 
 ### Skills 指南重點
