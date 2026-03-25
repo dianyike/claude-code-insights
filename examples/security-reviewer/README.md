@@ -1,0 +1,133 @@
+# Security Reviewer — Dual-Verification Subagent Example
+
+A working example of a security-focused subagent that cross-validates findings between Semgrep (static analysis) and Codex (LLM second opinion) via MCP, producing confidence-scored security reports.
+
+## Architecture
+
+```
+You → Claude Code (Main Agent)
+       ↓
+   security-reviewer (Subagent, Sonnet)
+       ↓
+   ┌─────────────────────────────┐
+   │ Step 1: Semgrep Baseline     │  semgrep_scan + semgrep_findings
+   │ Independent judgment first   │  + supply chain + manual Grep
+   └──────────┬──────────────────┘
+              ↓
+   ┌─────────────────────────────┐
+   │ Step 2: Codex Second Opinion │  mcp__codex__codex (read-only)
+   │ MCP tool call, no custom     │  mcp__codex__codex-reply (follow-up)
+   │ protocol needed              │
+   └──────────┬──────────────────┘
+              ↓
+   ┌─────────────────────────────┐
+   │ Step 3: Cross-Validation     │  security-review-protocol skill
+   │ Confidence scoring           │  Semgrep 60% / Codex 40% weight
+   │ Conflict → conservative      │  False negative > false positive
+   └──────────┬──────────────────┘
+              ↓
+   Report → .agents-output/security/
+   Return → verdict + counts + file path
+```
+
+## File Structure
+
+```
+.claude/
+├── agents/
+│   └── security-reviewer.md              # Subagent: role + workflow + completion
+└── skills/
+    └── security-review-protocol/
+        ├── SKILL.md                       # Core logic: cross-validation + scoring
+        ├── reference/
+        │   └── mcp-tools.md               # MCP tool call patterns (on-demand)
+        └── templates/
+            └── report-template.md         # Report structure (on-demand)
+```
+
+## Prerequisites
+
+- **Semgrep MCP plugin**: `semgrep-plugin` configured in Claude Code
+- **Codex MCP server**: `codex` configured in Claude Code
+- Both must appear in `/tools` output
+
+## How to Use
+
+### 1. Copy files into your project
+
+```bash
+# Copy the subagent
+cp agents/security-reviewer.md YOUR_PROJECT/.claude/agents/
+
+# Copy the skill (entire directory)
+cp -r skills/security-review-protocol YOUR_PROJECT/.claude/skills/
+```
+
+### 2. Trigger a security review
+
+Say any of these to Claude Code:
+
+- "security check"
+- "audit code"
+- "scan for vulnerabilities"
+- "is this safe"
+- "check for secrets"
+- "before merge security scan"
+
+Or explicitly: `@security-reviewer`
+
+### 3. Read the report
+
+Reports are written to `.agents-output/security/YYYY-MM-DD-<scope>-security-review.md`.
+
+## Design Principles
+
+### Content Layering (No Duplication)
+
+| Layer | Contains | Does NOT contain |
+|-------|----------|-----------------|
+| Subagent prompt | Role, workflow steps, output location, completion checklist | Business logic, scoring formulas, MCP parameters |
+| SKILL.md | Cross-validation logic, conflict resolution, confidence scoring | MCP call examples, report template |
+| reference/ | MCP tool call patterns and parameters | Business logic |
+| templates/ | Report markdown structure | Analysis logic |
+
+Each piece of information lives in exactly one place. The subagent references the skill; the skill references its appendices.
+
+### Trust-but-Verify Protocol
+
+The core insight: **run your own analysis first, then get a second opinion, then cross-reference.**
+
+| Scenario | Handling |
+|----------|---------|
+| Both agree | High confidence (80%+), report directly |
+| Semgrep found, Codex missed | Report — tool findings are reproducible (60%) |
+| Codex found, Semgrep missed | Verify with Grep/AST first, then report (40%+) |
+| Conflict | Deep verification, lean conservative |
+
+### Conservative Principle
+
+When Semgrep and Codex disagree, prefer false positives over false negatives. A false alarm wastes time; a missed vulnerability causes damage.
+
+## Sample Output
+
+See [sample-output/2026-03-25-test-vuln-security-review.md](sample-output/2026-03-25-test-vuln-security-review.md) for a real report generated from a test file containing intentional vulnerabilities (hardcoded secret, SQL injection, XSS).
+
+Key observations from the sample:
+- 3 HIGH findings confirmed by both sources (90% confidence each)
+- 1 MEDIUM finding discovered by Codex only, then verified via custom Semgrep rule (75% confidence)
+- Parameterized query correctly identified as SAFE (negative check)
+- XSS severity conflict resolved conservatively (Semgrep WARNING → Codex HIGH → kept HIGH)
+
+## Customization
+
+### Adjust confidence weights
+
+Edit `SKILL.md` section 3.2 to change the Semgrep/Codex weight ratio (default 60/40).
+
+### Add project-specific patterns
+
+Add custom Semgrep rules to the manual pattern check in `security-reviewer.md` Step 1.5.
+
+### Change the Codex prompt strategy
+
+Edit `reference/mcp-tools.md` Codex section to adjust what the Codex prompt asks for.

@@ -1,3 +1,4 @@
 .DS_Store
+.agents-output/
 .claude/
 .mcp.json
