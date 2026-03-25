@@ -21,11 +21,26 @@ Claude Code Skills 與 Subagent 的中文最佳實踐指南。
 
 ## 實戰範例
 
+### Subagent 範例
+
 | 範例 | 說明 | 難度 |
 |------|------|------|
 | [examples/security-reviewer](examples/security-reviewer) | 雙重驗證安全審查 Subagent — Semgrep + Codex 交叉驗證，附信心分數與衝突處理 | 進階 |
 
-> **注意**：範例可直接用於生產環境。但因為涉及 MCP 多工具串接、Subagent + Skill 分層設計、交叉驗證協議等進階概念，建議先讀完兩份指南，以便理解設計原理並依需求調整。
+### Skills 範例
+
+以下 Skills 參考自 [mattpocock/skills](https://github.com/mattpocock/skills)（設計樹、TDD vertical slice 等概念的實踐），並依據本倉庫的最佳實踐指南進行改造：模板抽離至 `templates/`、參考文件歸入 `reference/`、補齊 Gotchas 區段。
+
+| 範例 | 說明 | 用途 |
+|------|------|------|
+| [examples/grill-me](examples/grill-me) | 設計質詢 — 遍歷 decision tree 的每個分支，逐一解決設計決策的依賴關係 | 編碼前的設計壓力測試 |
+| [examples/tdd](examples/tdd) | TDD 工作流 — red-green-refactor 垂直切片，附測試範例、mock 指南、深模組設計參考 | 功能開發與 Bug 修復 |
+| [examples/prd-to-plan](examples/prd-to-plan) | PRD 轉實作計畫 — 將需求拆成 tracer bullet 垂直切片，輸出至 `./plans/` | 需求分解與階段規劃 |
+| [examples/write-a-skill](examples/write-a-skill) | Skill 建構指南 — 結構、description 撰寫、拆分時機的元技能 | 建立新的 Skill |
+
+**Solo 開發工作流**：`/grill-me`（質詢設計）→ `/prd-to-plan`（拆成 phase）→ `/tdd`（逐個實作）
+
+> **注意**：範例可直接複製到 `.claude/skills/` 使用。建議先讀完兩份指南，以便理解設計原理並依需求調整。
 
 ## 快速導覽
 

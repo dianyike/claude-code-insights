@@ -219,10 +219,15 @@ Adapt the order based on the current state (e.g., skip build if only docs change
 | `context` | 否 | 設為 `fork` 在 subagent 中隔離執行 |
 | `agent` | 否 | `context: fork` 時指定使用的 subagent 類型（如 `Explore`、`Plan`、自訂 agent） |
 | `hooks` | 否 | Skill 生命週期的 hooks 設定 |
-| `mode` | 否 | 設為 `true` 將 skill 歸類為 Mode Command，顯示在 skills 清單頂部特殊區段。適用於 `debug-mode`、`expert-mode` 等行為修改型 skill。**注意：此欄位來自第三方原始碼分析，未列於官方 frontmatter reference 表格，行為可能隨版本變動** |
-| `version` | 否 | 版本追蹤用 metadata，如 `"1.0.0"`。Agent Skills 開放標準欄位 |
-| `compatibility` | 否 | 聲明所需工具和依賴。Agent Skills 開放標準欄位 |
-| `license` | 否 | 授權聲明（如 `MIT`）。Agent Skills 開放標準欄位，用於可分享的 skill |
+
+> **以下欄位非 Claude Code 原生支援** — Claude Code 的 frontmatter 解析器不處理這些欄位，寫入後不會產生任何效果。列於此處僅供參考。
+
+| 欄位 | 來源 | 說明 |
+|------|------|------|
+| `mode` | 第三方原始碼分析 | 設為 `true` 將 skill 歸類為 Mode Command。未列於官方 frontmatter reference，行為可能隨版本變動 |
+| `version` | [Agent Skills](https://agentskills.io) 開放標準 | 版本追蹤用 metadata，如 `"1.0.0"` |
+| `compatibility` | [Agent Skills](https://agentskills.io) 開放標準 | 聲明所需工具和依賴 |
+| `license` | [Agent Skills](https://agentskills.io) 開放標準 | 授權聲明（如 `MIT`），用於可分享的 skill |
 
 ### 字串替換變數
 
@@ -869,6 +874,7 @@ Skill 能運行腳本、存取檔案系統，安全意識必須同步升級。
 | [FlorianBruniaux/claude-code-ultimate-guide](https://github.com/FlorianBruniaux/claude-code-ultimate-guide) | 14 個生產級 skill 範本，含安全威脅資料庫 |
 | [hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) | 綜合策展，含 skills、hooks、plugins |
 | [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) | 社群策展 Skills 集合 |
+| [mattpocock/skills](https://github.com/mattpocock/skills) | 17 個高品質 Skills — grill-me（設計樹質詢）、tdd（垂直切片 TDD）、write-a-prd / prd-to-plan（需求到實作計畫）等，設計模式值得參考 |
 
 ### 延伸閱讀
 
