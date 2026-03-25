@@ -18,6 +18,7 @@
 8. [Model 選擇策略](#8-model-選擇策略)
 9. [架構模式](#9-架構模式)
 10. [參考倉庫](#10-參考倉庫)
+11. [快速檢查清單](#11-快速檢查清單)
 
 ---
 
@@ -199,7 +200,7 @@ mcpServers:                   # 可選：MCP 伺服器
 
 ### 模板：研究型 Agent（帶檔案輸出）
 
-```yaml
+````yaml
 ---
 name: researcher
 description: >
@@ -251,11 +252,11 @@ maxTurns: 20
 - [ ] 至少 3 個獨立來源交叉驗證
 - [ ] 結果已寫入 `.agents-output/research/` 目錄
 - [ ] 回傳摘要和檔案路徑給主 agent
-```
+````
 
 ### 模板：程式碼審查 Agent（唯讀）
 
-```yaml
+````yaml
 ---
 name: code-reviewer
 description: >
@@ -319,7 +320,7 @@ maxTurns: 15
 1. 問題摘要（各等級數量）
 2. CRITICAL 和 HIGH 問題的一行描述
 3. 完整報告的檔案路徑
-```
+````
 
 ### 不適合 Subagent 的場景
 
@@ -426,7 +427,7 @@ tools: Read, Grep, Glob, WebSearch, Write
 
 ### 判斷規則
 
-> 完整的「內容類型放在哪裡」決策矩陣，請見 [Skills 最佳實踐指南 § 10. Skill 與 Subagent 的協作](skills-best-practices.md#10-skill-與-subagent-的協作)。
+> 完整的「內容類型放在哪裡」決策矩陣，請見 [Skills 最佳實踐指南 § 11. Skill 與 Subagent 的協作](skills-best-practices.md#11-skill-與-subagent-的協作)。
 >
 > 簡要原則：**輸出格式**留在 Subagent prompt（agent 自身的工作規格）；**程式碼風格/測試模式**放在 Skills（通用知識，多 agent 共用）；**函式庫文檔**透過 MCP 即時取得。
 
@@ -549,7 +550,7 @@ Agent({ type: "type-checker", prompt: "審查 utilities" })
 
 ---
 
-## 快速檢查清單
+## 11. 快速檢查清單
 
 設計一個新 subagent 時，逐項確認：
 

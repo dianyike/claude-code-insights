@@ -23,6 +23,7 @@
 13. [迭代方法論](#13-迭代方法論)
 14. [常見問題排查](#14-常見問題排查)
 15. [參考資源](#15-參考資源)
+16. [快速檢查清單](#16-快速檢查清單)
 
 ---
 
@@ -365,7 +366,7 @@ Research $ARGUMENTS thoroughly:
 
 Skill 可以打包並執行任何語言的腳本，產出互動式 HTML 等視覺化內容：
 
-```yaml
+````yaml
 ---
 name: codebase-visualizer
 description: Generate an interactive tree visualization of your codebase
@@ -379,7 +380,7 @@ Run the visualization script:
 ```bash
 python ${CLAUDE_SKILL_DIR}/scripts/visualize.py .
 ```
-```
+````
 
 這個模式適用於：依賴圖、測試覆蓋報告、API 文檔、資料庫 schema 視覺化等。
 
@@ -514,7 +515,7 @@ To disable, end the session or start a new one.
 
 ### 模板一：Reference Skill（背景知識型）
 
-```yaml
+````yaml
 ---
 name: coding-style
 description: >
@@ -543,7 +544,7 @@ CORRECT: update(original, field, value) -> returns new copy with change
 ## Additional resources
 
 - For complete patterns, see [reference.md](reference.md)
-```
+````
 
 ### 模板二：Task Skill（任務型，僅用戶觸發）
 
@@ -884,7 +885,7 @@ Skill 能運行腳本、存取檔案系統，安全意識必須同步升級。
 
 ---
 
-## 快速檢查清單
+## 16. 快速檢查清單
 
 設計一個新 Skill 時，逐項確認：
 
