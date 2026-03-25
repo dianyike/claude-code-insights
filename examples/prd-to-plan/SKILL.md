@@ -5,6 +5,7 @@ description: >
   vertical slices, saved as a local Markdown file in ./plans/. Use when
   user wants to break down a PRD, create an implementation plan, plan
   phases from a PRD, or mentions "tracer bullets".
+allowed-tools: Read, Write, Grep, Glob
 ---
 
 # PRD to Plan
@@ -63,6 +64,13 @@ Create `./plans/` if it doesn't exist. Write the plan as a Markdown file named a
 
 - Use the template at [templates/plan.md](templates/plan.md)
 - Ask the user to confirm the filename before writing
+
+## Completion Criteria
+
+- [ ] All PRD user stories mapped to at least one phase
+- [ ] Each phase is a vertical slice (touches all layers end-to-end)
+- [ ] User approved the phase breakdown
+- [ ] Plan file written to `./plans/` with confirmed filename
 
 ## Gotchas
 

@@ -4,6 +4,7 @@ description: >
   Test-driven development with red-green-refactor loop. Use when user wants
   to build features or fix bugs using TDD, mentions "red-green-refactor",
   wants integration tests, or asks for test-first development.
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
 # Test-Driven Development
@@ -67,6 +68,13 @@ After all tests pass:
 - [ ] Test would survive internal refactor
 - [ ] Code is minimal for this test
 - [ ] No speculative features added
+
+## Completion Criteria
+
+- [ ] All planned behaviors have a corresponding test
+- [ ] All tests pass (GREEN state)
+- [ ] Refactor pass completed — no duplication, modules are deep
+- [ ] No speculative code — every line justified by a test
 
 ## Gotchas
 

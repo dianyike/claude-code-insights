@@ -5,6 +5,7 @@ description: >
   shared understanding, resolving each branch of the decision tree.
   Use when user wants to stress-test a plan, get grilled on their design,
   or mentions "grill me".
+allowed-tools: Read, Grep, Glob, Write
 ---
 
 Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
@@ -61,3 +62,14 @@ When all branches are resolved, write a decision record to `docs/decisions/YYYY-
 - Use the template at [templates/decision-record.md](templates/decision-record.md)
 - If `docs/decisions/` does not exist, create it
 - Ask the user to confirm the filename before writing
+
+## Completion Criteria
+
+- [ ] All interrogation dimensions relevant to this design have been probed
+- [ ] Each branch resolved with a concrete decision (not "we'll figure it out later")
+- [ ] Contradictions and gaps surfaced and addressed
+- [ ] Decision record written to `docs/decisions/` and confirmed by user
+
+## Gotchas
+
+- **Iterate this section**: After each grill session, append new gotchas here

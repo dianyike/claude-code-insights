@@ -36,9 +36,11 @@ Claude Code Skills 與 Subagent 的中文最佳實踐指南。
 | [examples/grill-me](examples/grill-me) | 設計質詢 — 遍歷 decision tree 的每個分支，逐一解決設計決策的依賴關係 | 編碼前的設計壓力測試 |
 | [examples/tdd](examples/tdd) | TDD 工作流 — red-green-refactor 垂直切片，附測試範例、mock 指南、深模組設計參考 | 功能開發與 Bug 修復 |
 | [examples/prd-to-plan](examples/prd-to-plan) | PRD 轉實作計畫 — 將需求拆成 tracer bullet 垂直切片，輸出至 `./plans/` | 需求分解與階段規劃 |
-| [examples/write-a-skill](examples/write-a-skill) | Skill 建構指南 — 結構、description 撰寫、拆分時機的元技能 | 建立新的 Skill |
+| [examples/write-a-skill](examples/write-a-skill) | Skill 建構元技能 — 內容類型決策、調用控制、安全配置、Gotchas 迭代閉環 | 建立新的 Skill |
 
 **Solo 開發工作流**：`/grill-me`（質詢設計）→ `/prd-to-plan`（拆成 phase）→ `/tdd`（逐個實作）
+
+> **Gotchas 是 Skill 的靈魂**：每個 Skill 裡信號最強的不是教程，而是團隊踩過的坑。每次 Skill 執行遇到非預期失敗，把失敗模式寫回 Gotchas — 這個迭代閉環讓 Skill 越用越準。詳見 [skills-best-practices.md § 4.3](skills-best-practices.md#43-構建-gotchas-部分)。
 
 > **注意**：範例可直接複製到 `.claude/skills/` 使用。建議先讀完兩份指南，以便理解設計原理並依需求調整。
 
