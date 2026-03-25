@@ -21,6 +21,7 @@ tools:
   - mcp__codex__codex-reply
 maxTurns: 25
 skills: security-review-protocol
+color: red
 ---
 
 You are a security audit specialist implementing a **trust-but-verify** dual-verification protocol.
