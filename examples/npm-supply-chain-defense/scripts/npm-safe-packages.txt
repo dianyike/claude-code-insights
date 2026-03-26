@@ -1,0 +1,9 @@
+# npm packages approved for install scripts (one per line)
+# These will skip the pre-install safety check.
+# Add packages here after manual review.
+esbuild
+sharp
+prisma
+bcrypt
+puppeteer
+playwright

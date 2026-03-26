@@ -1,0 +1,18 @@
+// Add this "hooks" section to your ~/.claude/settings.json
+// This hook runs before every Bash command and checks npm install targets
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/scripts/npm-pkg-check.sh",
+            "timeout": 15000
+          }
+        ]
+      }
+    ]
+  }
+}

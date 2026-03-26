@@ -107,6 +107,44 @@ Parameters:
     so we can verify with a targeted grep.
 ```
 
+### codex-reply — Request concrete fixes
+
+```
+Tool: mcp__codex__codex-reply
+Parameters:
+  threadId: "<threadId from initial codex call>"
+  prompt: |
+    Based on the findings from your review, provide concrete fixes for each
+    confirmed issue.
+
+    For each fix:
+    1. The exact code change (before → after)
+    2. Why this fix addresses the root cause
+    3. Any edge cases the fix might miss
+    4. Whether the fix could introduce new issues
+
+    Confirmed findings:
+    - [list findings with file:line]
+```
+
+### codex-reply — Verify fixes are correct
+
+```
+Tool: mcp__codex__codex-reply
+Parameters:
+  threadId: "<threadId from initial codex call>"
+  prompt: |
+    I applied fixes based on your suggestions. Please review the CURRENT
+    version of the code and verify:
+
+    1. Are all previously reported issues properly fixed?
+    2. Are there any NEW issues introduced by the fixes?
+    3. Any remaining edge cases or security concerns?
+
+    Be specific about line numbers and whether each original finding is
+    resolved or still present.
+```
+
 ## Key Constraints
 
 - **Codex sandbox MUST be `read-only`** — it should analyze, never modify

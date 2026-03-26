@@ -27,7 +27,13 @@ Claude Code Skills 與 Subagent 的中文最佳實踐指南。
 
 | 範例 | 說明 | 難度 |
 |------|------|------|
-| [examples/security-reviewer](examples/security-reviewer) | 雙重驗證安全審查 Subagent — Semgrep + Codex 交叉驗證，附信心分數與衝突處理 | 進階 |
+| [examples/security-reviewer](examples/security-reviewer) | 雙重驗證安全審查 Subagent — Semgrep + Codex 交叉驗證，附 Fix-Verify 迴圈、信心分數與衝突處理 | 進階 |
+
+### Hook 範例
+
+| 範例 | 說明 | 難度 |
+|------|------|------|
+| [examples/npm-supply-chain-defense](examples/npm-supply-chain-defense) | npm 供應鏈三層防禦 — `.npmrc` 腳本封鎖 + PreToolUse Hook 檢查（registry、OSV.dev、版本解析、CLI 語法驗證）+ Semgrep supply chain 掃描。附 42 個回歸測試 | 進階 |
 
 ### Skills 範例
 

@@ -136,7 +136,73 @@ Where:
 - Confidence 50-69%: Report with "needs verification" flag
 - Confidence < 50%: Escalate to human review, do not auto-report as confirmed
 
-## 4. Gotchas
+## 4. Fix-Verify Loop
+
+After findings are confirmed (confidence >= 50%), use Codex to get fix suggestions and verify them.
+
+### 4.1 Request Fix from Codex
+
+Use `codex-reply` with the existing threadId to request concrete fixes:
+
+```
+Tool: mcp__codex__codex-reply
+Parameters:
+  threadId: "<saved threadId>"
+  prompt: |
+    Based on the findings from your review, provide concrete fixes for each confirmed issue.
+
+    For each fix:
+    1. The exact code change (before → after)
+    2. Why this fix addresses the root cause
+    3. Any edge cases the fix might miss
+    4. Whether the fix could introduce new issues
+
+    Confirmed findings:
+    - [list findings with file:line]
+```
+
+### 4.2 Apply and Re-verify
+
+After applying fixes:
+
+1. Run Semgrep again on the modified files — confirm the original findings are gone
+2. Run Semgrep on the modified files — check for NEW findings introduced by the fix
+3. Use `codex-reply` to verify the fix is correct and complete:
+
+```
+Tool: mcp__codex__codex-reply
+Parameters:
+  threadId: "<saved threadId>"
+  prompt: |
+    I applied fixes based on your suggestions. Please review the CURRENT version
+    of the code and verify:
+
+    1. Are all previously reported issues properly fixed?
+    2. Are there any NEW issues introduced by the fixes?
+    3. Any remaining edge cases or security concerns?
+
+    Be specific about line numbers and whether each original finding is resolved
+    or still present.
+```
+
+### 4.3 Iteration Protocol
+
+- If Codex finds remaining issues in the re-verify step, repeat 4.1-4.2
+- Cap at 3 iterations — if issues persist after 3 rounds, escalate to human review
+- Each iteration MUST re-run Semgrep (not just Codex) to avoid regression
+- Never declare "all fixed" based solely on Codex's claim — Semgrep must also confirm
+
+### 4.4 Common Fix Pitfalls
+
+| Pitfall | Example | Prevention |
+|---------|---------|------------|
+| Fix introduces new vuln | Escaping SQL by string concat instead of parameterized query | Semgrep re-scan catches pattern |
+| Fix is cosmetic only | Renaming a variable but not fixing the logic | Codex re-verify catches intent mismatch |
+| bare `except:` catches SystemExit | `sys.exit()` inside `try/except:` block | Check that except clauses use `except Exception:` not `except:` |
+| Fix for wrong version | Checking latest when user specified `@^1.0.0` | Always resolve to exact version before checking |
+| Partial fix | Fixed one call site but same pattern exists elsewhere | Grep for the pattern project-wide after fixing |
+
+## 5. Gotchas
 
 - Semgrep `semgrep_scan` requires **absolute paths** — relative paths silently return no results
 - Codex may hallucinate line numbers — always verify with Read before citing
@@ -144,4 +210,8 @@ Where:
 - Codex `read-only` sandbox prevents it from running verification scripts — you must do that yourself
 - If Codex returns a threadId, save it. If conflict resolution needs follow-up, use `codex-reply` with that threadId instead of starting a new session (preserves context, saves tokens)
 - Semgrep findings JSON structure may vary between local scan and platform findings — normalize before comparing
+- Never declare "all issues fixed" after applying Codex's suggestions without re-running both Codex verify AND Semgrep re-scan — Codex can confirm fixes that are actually incomplete
+- When Codex says "no new issues", still run Semgrep — Codex misses structural issues like bare `except:` catching `SystemExit`, `pipefail` interactions, and shell quoting edge cases
+- Codex is strong at finding logic-level issues (fail-open, parser bypass, state machine gaps) but weak at shell/bash edge cases (SIGPIPE, IFS, `grep | head` under pipefail) — Semgrep is better for the latter
+- After each fix round, explicitly list what was claimed fixed vs what was actually verified — prevents "fixed" claims from compounding without evidence
 - **Iterate this section**: After each real review, append new gotchas here — false positive patterns you encountered, specific Codex hallucination tendencies (e.g., inventing middleware that doesn't exist), or Semgrep rules that consistently misfire on your codebase. This list should grow with use, not stay static
