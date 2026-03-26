@@ -6,18 +6,20 @@ Claude Code Skills 與 Subagent 的中文最佳實踐指南。
 
 ## 適合誰
 
-已有 Claude Code 基礎使用經驗，想進一步掌握 Skills 和 Subagent 設計模式的開發者。
+從剛接觸 Claude Code 的新手到想深入掌握 Skills 和 Subagent 設計模式的開發者。
 
-**前置知識**：熟悉 Claude Code 基本操作、了解 `.claude/` 目錄結構、有使用 CLAUDE.md 的經驗。
+- **新手**：從 CLAUDE.md 指南開始，建立正確的基礎觀念
+- **進階**：Skills 和 Subagent 指南涵蓋設計模式與架構策略
 
 ## 內容
 
-| 文件 | 說明 |
-|------|------|
-| [skills-best-practices.md](skills-best-practices.md) | Skills 最佳實踐 — 檔案格式、載入機制、內容寫作原則、進階模式、設計模板 |
-| [subagent-best-practices.md](subagent-best-practices.md) | Subagent 最佳實踐 — 黑箱問題與解法、結果持久化、工具範圍策略、架構模式 |
+| 文件 | 說明 | 適合 |
+|------|------|------|
+| [claude-md-best-practices.md](claude-md-best-practices.md) | CLAUDE.md 最佳實踐 — 為什麼不用 `/init`、三層架構模型、Hooks 取代指令、反模式 | 新手入門 |
+| [skills-best-practices.md](skills-best-practices.md) | Skills 最佳實踐 — 檔案格式、載入機制、內容寫作原則、進階模式、設計模板 | 進階 |
+| [subagent-best-practices.md](subagent-best-practices.md) | Subagent 最佳實踐 — 黑箱問題與解法、結果持久化、工具範圍策略、架構模式 | 進階 |
 
-兩份指南互相引用，建議都讀。
+三份指南互相引用，建議依序閱讀：CLAUDE.md → Skills → Subagent。
 
 ## 實戰範例
 
@@ -45,6 +47,14 @@ Claude Code Skills 與 Subagent 的中文最佳實踐指南。
 > **注意**：範例可直接複製到 `.claude/skills/` 使用。建議先讀完兩份指南，以便理解設計原理並依需求調整。
 
 ## 快速導覽
+
+### CLAUDE.md 指南重點
+
+- 為什麼不建議用 `/init` 自動生成（附論文數據）
+- 從零開始的正確姿勢：先不寫，出問題再加
+- 三層架構模型：強制執行層 / 高頻召回層 / 按需查閱層
+- 用 Hooks 取代 CLAUDE.md 指令（確定性 > 建議）
+- 五大反模式與維護實務
 
 ### Skills 指南重點
 
