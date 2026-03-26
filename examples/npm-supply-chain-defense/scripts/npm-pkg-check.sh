@@ -11,7 +11,7 @@
 
 # Require python3 upfront
 if ! command -v python3 &>/dev/null; then
-  echo "⚠ npm-pkg-check: python3 required but not found — blocking as precaution"
+  echo "⚠️ npm-pkg-check: python3 required but not found — blocking as precaution"
   exit 2
 fi
 
@@ -404,7 +404,7 @@ if not tool_input:
 try:
     data = json.loads(tool_input)
 except (json.JSONDecodeError, TypeError):
-    print("⚠ npm-pkg-check: failed to parse TOOL_INPUT — blocking as precaution")
+    print("⚠️ npm-pkg-check: failed to parse TOOL_INPUT — blocking as precaution")
     write_log(make_log_entry(None, None, None, None, None, "blocked", "parse_error", "invalid_tool_input_json"))
     sys.exit(2)
 
@@ -444,7 +444,7 @@ for pkg, spec in packages:
         continue
 
     if "error" in abbrev:
-        print(f"⚠ {pkg} — not found on npm registry")
+        print(f"⚠️ {pkg} — not found on npm registry")
         write_log(make_log_entry(detected_pm, pkg, spec, None, dep_scope, "blocked", "package_not_found", None))
         blocked = True
         continue
@@ -510,7 +510,7 @@ for pkg, spec in packages:
             write_log(make_log_entry(detected_pm, pkg, spec, check_version, dep_scope, "blocked", "low_downloads_with_scripts", None))
             blocked = True
         else:
-            print(f"⚠ {pkg}{version_display} — ({risk_str}) — {downloads}/week, {maintainers} maintainers")
+            print(f"⚠️ {pkg}{version_display} — ({risk_str}) — {downloads}/week, {maintainers} maintainers")
             write_log(make_log_entry(detected_pm, pkg, spec, check_version, dep_scope, "allow_with_warning", "has_risks", risk_str))
 
 if blocked:
