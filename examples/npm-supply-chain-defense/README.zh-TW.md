@@ -101,7 +101,7 @@ npm-supply-chain-defense/
 │   ├── npm-pkg-check.sh           # 第二層：安裝前檢查（Python 嵌入 bash）
 │   └── npm-safe-packages.txt      # 白名單
 ├── tests/
-│   └── run-tests.py               # 48 個回歸測試��37 unit + 11 live）
+│   └── run-tests.py               # 48 個回歸測試（37 unit + 11 live）
 ├── settings-snippet.jsonc          # Hook 設定片段
 ├── README.md                       # 英文版
 └── README.zh-TW.md                # 本檔案
@@ -123,12 +123,12 @@ npm-supply-chain-defense/
 
 | 場景 | 輸出 |
 |------|------|
-| `npm install zzz-fake-pkg`（不存在） | `⚠ not found on npm registry` |
+| `npm install zzz-fake-pkg`（不存在） | `⚠️ not found on npm registry` |
 | `npm install lodash@4.17.20`（已知 CVE） | `🚫 BLOCKED (3 known vuln(s): GHSA-...)` |
 | `npm install lodash@beta`（版本無法解析） | `🚫 BLOCKED (version not resolved)` |
 | `npm install --mystery-flag lodash`（不明 CLI flag） | `🚫 BLOCKED (unrecognized option)` |
 | 低下載量 + 有 install scripts | `🚫 BLOCKED (low downloads, has install scripts)` |
-| 無效的 `TOOL_INPUT` JSON | `⚠ blocking as precaution` |
+| 無效的 `TOOL_INPUT` JSON | `⚠️ blocking as precaution` |
 | Registry 無法連線（核心信號） | `🚫 BLOCKED (registry unreachable)` |
 
 ## 設計原則
