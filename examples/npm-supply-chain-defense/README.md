@@ -2,6 +2,20 @@
 
 A working example of npm supply chain protection using Claude Code's Hook + MCP mechanisms. Automatically intercepts suspicious packages before AI-driven installs.
 
+## Threat Model
+
+AI coding assistants autonomously run `npm install` / `yarn add` / `pnpm add` / `bun add` on behalf of users. This introduces threats that don't exist in manual workflows:
+
+| Threat | Description | Frequency |
+|--------|-------------|-----------|
+| **Package hallucination** | AI invents a package name that doesn't exist on npm — or worse, matches a typosquat someone registered to intercept this exact scenario | ~1 in 15 AI-assisted additions* |
+| **Version hallucination** | Package exists, but AI specifies a version that doesn't — or one with known CVEs | More common than package hallucination* |
+| **Malicious install scripts** | `postinstall` / `preinstall` hooks exfiltrate credentials, install backdoors, or download remote payloads | Ongoing supply chain risk |
+| **Typosquatting** | `lodash` vs `l0dash` — a single character difference leads to a malicious package | Registry-level threat |
+| **Vulnerable pinning** | AI pins to an old version with known prototype pollution, ReDoS, or other CVEs | Common with outdated training data |
+
+\* Frequency estimates from community feedback on [anthropics/claude-code#39421](https://github.com/anthropics/claude-code/issues/39421).
+
 ## Architecture
 
 ```text
@@ -32,7 +46,7 @@ Claude runs: npm install foo
 | Layer | Threat | Mechanism |
 |-------|--------|-----------|
 | **1** | Malicious `postinstall`/`preinstall` scripts | `.npmrc` globally blocks install scripts |
-| **2** | Typosquatting, vulnerable versions, nonexistent packages, unknown CLI flags | Hook queries npm registry + OSV.dev, resolves versions, validates CLI syntax |
+| **2** | Typosquatting, vulnerable versions, nonexistent packages, unknown CLI flags, version hallucination | Hook queries npm registry + OSV.dev, resolves versions, validates CLI syntax |
 | **3** | Known CVEs, malicious code executed at `import` time | Semgrep `semgrep_scan_supply_chain` MCP tool |
 
 ## Quick Start
@@ -61,7 +75,7 @@ npm-supply-chain-defense/
 │   ├── npm-pkg-check.sh           # Layer 2: pre-install check (Python inside bash)
 │   └── npm-safe-packages.txt      # Whitelist for packages needing install scripts
 ├── tests/
-│   └── run-tests.py               # 42 regression tests (31 unit + 11 live)
+│   └── run-tests.py               # 48 regression tests (37 unit + 11 live)
 ├── settings-snippet.jsonc          # Hook configuration for settings.json
 ├── README.md                       # This file (English)
 └── README.zh-TW.md                # Traditional Chinese version
@@ -95,21 +109,28 @@ npm-supply-chain-defense/
 
 ### Fail-closed
 
-Core signals block on failure. Supplementary signals degrade gracefully.
+The hook blocks by default when it cannot determine safety. Core signals must succeed for a package to be allowed; supplementary signals degrade gracefully.
 
-| Signal | Type | On failure |
-|--------|------|------------|
-| Registry metadata | Core | **Block** |
-| Version resolution | Core | **Block** |
-| Install scripts check | Core | **Block** |
-| OSV vulnerability check | Supplementary | Warning only |
-| Download count | Supplementary | Warning only |
+| Signal | Type | On failure | Rationale |
+|--------|------|------------|-----------|
+| Registry metadata | **Core** | **Block** | Can't verify package exists |
+| Version resolution | **Core** | **Block** | Can't check the actual version being installed |
+| Install scripts check | **Core** | **Block** | Can't determine if scripts are safe |
+| OSV vulnerability check | Supplementary | Warning only | CVE database may be temporarily down |
+| Download count | Supplementary | Warning only | Stats API is non-critical |
+
+This means: if npm's registry is unreachable, the hook blocks. If OSV.dev is down, the hook warns but allows (since the registry check already passed).
 
 ### Per-PM option parsing
 
 The hook validates CLI flags against per-package-manager arity tables (npm, yarn, pnpm, bun). Unknown flags are blocked to prevent parser bypass.
 
-Known value-taking flags (e.g. `--registry`, `--tag`, `--cwd`) correctly consume their next token. Boolean flags (e.g. `--fund`, `--save-dev`) do not. `--flag=value` syntax is validated against the same table.
+- Known value-taking flags (e.g. `--registry`, `--tag`, `--cwd`) correctly consume their next token
+- Boolean flags (e.g. `--fund`, `--save-dev`) do not
+- `--flag=value` syntax validates the base flag against the same table
+- `--no-xxx` variants of boolean flags are auto-recognized
+- npm install verb aliases (`in`, `ins`, `isnt`, `isntall`, etc.) are supported
+- Shell operators (`&&`, `||`, `;`, `|`) stop parsing — only the first command is checked
 
 ### Version resolution
 
@@ -118,13 +139,74 @@ Known value-taking flags (e.g. `--registry`, `--tag`, `--cwd`) correctly consume
 | `4.17.21` (exact semver) | Used directly |
 | `latest`, `beta` (dist-tag) | Looked up from registry `dist-tags` |
 | `^4.17.0`, `~2.0` (range) | Resolved via `npm view` with 3s timeout |
-| Unresolvable | **Blocked** |
+| Unresolvable | **Blocked** (fail-closed) |
 
-### Environment variables
+### Dependency scope detection
+
+The hook detects dependency scope from CLI flags and records it in the structured log:
+
+| Flag | Scope |
+|------|-------|
+| `--save-dev`, `-D` | `dev` |
+| `--save-optional`, `-O` | `optional` |
+| `--save-peer` | `peer` |
+| `--save-prod`, `-P`, `--save`, `-S` (or no flag) | `prod` |
+
+Scope is logged but does not currently change block policy. This data enables future analysis of dev vs prod failure rates.
+
+## Environment Variables
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `NPM_PKG_CHECK_SAFE_LIST` | `~/.claude/scripts/npm-safe-packages.txt` | Override whitelist path |
+| `NPM_PKG_CHECK_SAFE_LIST` | `~/.claude/scripts/npm-safe-packages.txt` | Override whitelist file path |
+| `NPM_PKG_CHECK_LOG` | `~/.claude/logs/npm-pkg-check.jsonl` | Override structured log file path |
+
+## Structured Logging
+
+Every check decision is logged as a JSONL entry to `NPM_PKG_CHECK_LOG`:
+
+```json
+{
+  "ts": "2026-03-26T16:43:55Z",
+  "pm": "npm",
+  "package": "lodash",
+  "spec": "4.17.20",
+  "resolved_version": "4.17.20",
+  "scope": "prod",
+  "decision": "blocked",
+  "reason_code": "known_vulnerability",
+  "reason_detail": "GHSA-29mw-wpgm-hmr9, GHSA-35jh-r3h4-6jhm, GHSA-xxjr-mmjv-4gpg"
+}
+```
+
+### Taxonomy
+
+**`decision`** (fixed enum):
+
+| Value | Meaning |
+|-------|---------|
+| `allow` | Package passed all checks |
+| `allow_with_warning` | Allowed but has non-blocking risk signals |
+| `blocked` | Install prevented |
+
+**`reason_code`** (fixed enum):
+
+| Value | Meaning |
+|-------|---------|
+| `clean` | No risks detected |
+| `whitelisted` | Package in safe list, skipped checks |
+| `has_risks` | Non-blocking risks present |
+| `package_not_found` | Package does not exist on registry |
+| `version_not_resolved` | Version spec could not be resolved to exact semver |
+| `known_vulnerability` | OSV.dev returned CVE/GHSA matches |
+| `low_downloads_with_scripts` | Low weekly downloads AND has install scripts |
+| `core_signal_unavailable` | Registry or version manifest unreachable |
+| `unknown_option` | CLI flag not in arity table |
+| `parse_error` | TOOL_INPUT JSON could not be parsed |
+
+**`reason_detail`** (optional free text): vulnerability IDs, error messages, risk descriptions.
+
+This separation allows `GROUP BY reason_code` for analytics without string parsing.
 
 ## Running Tests
 
@@ -136,11 +218,16 @@ python3 tests/run-tests.py
 python3 tests/run-tests.py --live
 ```
 
-Unit tests use whitelisted packages to isolate parsing logic from network. The test harness overrides `NPM_PKG_CHECK_SAFE_LIST` to point at the repo's whitelist file, so results are independent of the user's home directory.
+### Test design
+
+- **Unit tests** (37): Use whitelisted packages (`esbuild`) to isolate parsing logic from network. Verify exit codes, scope detection, log structure, `reason_code` taxonomy, and `decision` taxonomy.
+- **Live tests** (11): Hit real npm registry, OSV.dev, and `npm view`. Verify version resolution, vulnerability detection, and real-world package checks.
+- **Log validation**: Tests verify every JSONL entry has required fields, `reason_code` is from the fixed taxonomy, `decision` is from the fixed taxonomy, and specific `reason_code` values appear for known test cases. Log validation failure causes the test run to fail (not just warn).
+- **Environment isolation**: The test harness overrides `NPM_PKG_CHECK_SAFE_LIST` and `NPM_PKG_CHECK_LOG` via environment variables, so results are independent of the user's home directory.
 
 ```text
-Result: 31 passed, 0 failed, 11 skipped / 42 total
-All 31 executed tests passed. Run with --live for full suite.
+Result: 37 passed, 0 failed, 11 skipped / 48 total
+All 37 executed tests passed. Run with --live for full suite.
 ```
 
 ## Limitations
@@ -151,5 +238,6 @@ These three layers cannot defend against:
 - **Zero-day hijacks** — legitimate package compromised before CVE is published
 - **Highly obfuscated malicious code** — may evade Semgrep rules
 - **Unlisted PM flags** — if a package manager adds new flags, they will be blocked until added to the arity table
+- **Post-install import validation** — the hook checks the package itself, not whether the AI's `import` statements match the package's actual exports (complementary CI-level tools like [Open Code Review](https://github.com/opencodereview/cli) address this)
 
 These require runtime defenses (Docker network restrictions, Node.js `--experimental-permission`) at the DevOps/infra level.
