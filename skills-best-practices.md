@@ -882,6 +882,8 @@ Skill 能運行腳本、存取檔案系統，安全意識必須同步升級。
 - [Claude Skills Explained (AnalyticsVidhya)](https://www.analyticsvidhya.com/blog/2026/03/claude-skills-custom-skills-on-claude-code/) — 架構深度解析
 - [Essential Claude Code Skills and Commands](https://batsov.com/articles/2026/03/11/essential-claude-code-skills-and-commands/) — 實用技巧
 - [10 Must-Have Skills for Claude (Medium)](https://medium.com/@unicodeveloper/10-must-have-skills-for-claude-and-any-coding-agent-in-2026-b5451b013051) — 社群推薦
+- [Skill Issue: Harness Engineering for Coding Agents (HumanLayer)](https://www.humanlayer.dev/blog/skill-issue-harness-engineering-for-coding-agents) — Skills 作為漸進式披露的實踐案例，含 context 腐蝕研究數據
+- [Harness Engineering: leveraging Codex in an agent-first world (OpenAI)](https://openai.com/index/harness-engineering/) — OpenAI 的 agent 工程方法論
 
 ---
 

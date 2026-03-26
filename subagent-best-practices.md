@@ -33,6 +33,8 @@ Subagent 是獨立於主對話的**隔離工作者**，每個 subagent：
 
 **發明原因**：主 agent 在研究 codebase 時會讀大量檔案，全部塞進主 context 會快速耗盡視窗。Subagent 在獨立 context 中完成工作，只回傳摘要。
 
+**數據佐證**：Chroma 的 context 腐蝕研究測試了 18 個模型，發現隨著 context 長度增加，效能明顯下降；當問題與 context 內容的語義相似度低時，下降幅度更陡峭。這解釋了為什麼把不相關的子任務資訊塞進主 context 會拖垮品質——subagent 的 context 隔離正是解決這個問題。（來源：[Harness Engineering | HumanLayer](https://www.humanlayer.dev/blog/skill-issue-harness-engineering-for-coding-agents)）
+
 ### Anthropic 官方觀點：大多數場景不需要 multi-agent
 
 > 來源：[When to use multi-agent systems (and when not to)](https://claude.com/blog/building-multi-agent-systems-when-and-how-to-use-them)（2026-01-23 發表）
@@ -547,6 +549,9 @@ Agent({ type: "type-checker", prompt: "審查 utilities" })
 - [Sub-Agent vs. Agent Team (Medium)](https://medium.com/data-science-collective/sub-agent-vs-agent-team-in-claude-code-pick-the-right-pattern-in-60-seconds-e856e5b4e5cc)
 - [Claude Code Deep Dive - Subagents in Action (Medium)](https://medium.com/@the.gigi/claude-code-deep-dive-subagents-in-action-703cd8745769)
 - [Subagent Parallel vs Sequential Patterns (claudefast)](https://claudefa.st/blog/guide/agents/sub-agent-best-practices)
+- [Harness Engineering: leveraging Codex in an agent-first world (OpenAI)](https://openai.com/index/harness-engineering/) — OpenAI 的 agent 工程方法論，強調用基礎設施約束 agent 行為
+- [Skill Issue: Harness Engineering for Coding Agents (HumanLayer)](https://www.humanlayer.dev/blog/skill-issue-harness-engineering-for-coding-agents) — 含 Chroma context 腐蝕研究、ETH Zurich 138 檔案實驗數據
+- [Harness Engineering (Martin Fowler)](https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html) — 軟體工程視角的 Harness Engineering 分析
 
 ---
 

@@ -737,6 +737,8 @@ CLAUDE.md **必須進 git 管理**：
 - [Matt Pocock — 如何強迫 Claude Code 使用正確的 CLI（避免使用 CLAUDE.md）](https://www.youtube.com/watch?v=3CSi8QAoN-s)
 - [claude-reflect — Claude Code 自學習系統（自動捕捉修正並寫入記憶）](https://github.com/BayramAnnakov/claude-reflect)
 - [為什麼你的 CLAUDE.md 越寫越爛？90% 的人搞錯了邊界](https://www.bilibili.com/video/BV1K7rSBJEPb/)
+- [Harness Engineering: leveraging Codex in an agent-first world（OpenAI）](https://openai.com/index/harness-engineering/) — AGENTS.md 當目錄而非百科、用 linter 強制規則
+- [Skill Issue: Harness Engineering for Coding Agents（HumanLayer）](https://www.humanlayer.dev/blog/skill-issue-harness-engineering-for-coding-agents) — HumanLayer CLAUDE.md 不超過 60 行的實踐
 - [Skills 最佳實踐指南](./skills-best-practices.md)
 - [Subagent 最佳實踐指南](./subagent-best-practices.md)
 
