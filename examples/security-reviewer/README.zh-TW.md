@@ -1,6 +1,6 @@
 # Security Reviewer — 雙重驗證 Subagent 範例
 
-一個可直接使用的安全審查 subagent 範例，透過 MCP 交叉驗證 Semgrep（靜態分析）與 Codex（LLM 第二意見）的發現，產出附信心分數的安全報告。
+一個可直接使用的安全審查 subagent 範例，透過 MCP 交叉驗證 Semgrep（靜態分析）與 Codex（LLM 第二意見）的發現，產出附信心分數的安全報告，並含收斂強化的 Fix-Verify Loop。
 
 ## 架構
 
@@ -24,6 +24,13 @@
    │ 第三步：交叉驗證             │  security-review-protocol skill
    │ 信心分數計算                 │  Semgrep 60% / Codex 40% 權重
    │ 衝突 → 保守原則              │  寧可誤報不漏報
+   └──────────┬──────────────────┘
+              ↓
+   ┌─────────────────────────────┐
+   │ 第四步：Fix-Verify Loop      │  收斂強化：
+   │ Known Fix Gate → Codex 修復  │  - 可反駁預測區塊
+   │ 預測 → Semgrep 驗證          │  - Fresh-session 策略切換
+   │ 假設帳本                     │  - 分級回退規則
    └──────────┬──────────────────┘
               ↓
    報告 → .agents-output/security/
@@ -87,7 +94,7 @@ cp -r skills/security-review-protocol YOUR_PROJECT/.claude/skills/
 | 層級 | 包含 | 不包含 |
 | ---- | ---- | ------ |
 | Subagent prompt | 角色、工作流步驟、輸出位置、完成條件 | 業務邏輯、計分公式、MCP 參數 |
-| SKILL.md | 交叉驗證邏輯、衝突處理、信心分數 | MCP 呼叫範例、報告模板 |
+| SKILL.md | 交叉驗證邏輯、衝突處理、信心分數、Fix-Verify Loop（預測區塊、迭代協議、回退規則、假設帳本） | MCP 呼叫範例、報告模板 |
 | reference/ | MCP 工具呼叫格式和參數 | 業務邏輯 |
 | templates/ | 報告 markdown 結構 | 分析邏輯 |
 
@@ -132,3 +139,15 @@ cp -r skills/security-review-protocol YOUR_PROJECT/.claude/skills/
 ### 變更 Codex prompt 策略
 
 編輯 `reference/mcp-tools.md` 的 Codex 區段，調整送給 Codex 的 prompt 內容。
+
+### 擴充 Known Fix Gate
+
+在 `SKILL.md` 第 4.1 節的 canonical fix pattern 表格中加入你的 codebase 常見漏洞類別（如 SSRF、反序列化）。
+
+### 調整回退敏感度
+
+編輯 `SKILL.md` 第 4.5 節的分級回退表。在較嚴格的環境中，可將「rule 轉移」從「保留變更」提升為「回退」。
+
+### 變更迭代上限
+
+預設為 3 輪後升級至人工審查（`SKILL.md` 第 4.4 節）。可縮減至 2 輪以加快回饋，或增加以允許更多探索空間。

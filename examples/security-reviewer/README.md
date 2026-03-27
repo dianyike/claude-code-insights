@@ -1,6 +1,6 @@
 # Security Reviewer — Dual-Verification Subagent Example
 
-A working example of a security-focused subagent that cross-validates findings between Semgrep (static analysis) and Codex (LLM second opinion) via MCP, producing confidence-scored security reports.
+A working example of a security-focused subagent that cross-validates findings between Semgrep (static analysis) and Codex (LLM second opinion) via MCP, producing confidence-scored security reports with a convergence-hardened Fix-Verify Loop.
 
 ## Architecture
 
@@ -24,6 +24,13 @@ You → Claude Code (Main Agent)
    │ Step 3: Cross-Validation     │  security-review-protocol skill
    │ Confidence scoring           │  Semgrep 60% / Codex 40% weight
    │ Conflict → conservative      │  False negative > false positive
+   └──────────┬──────────────────┘
+              ↓
+   ┌─────────────────────────────┐
+   │ Step 4: Fix-Verify Loop      │  Convergence-hardened:
+   │ Known Fix Gate → Codex fix   │  - Falsifiable prediction block
+   │ Prediction → Semgrep verify  │  - Fresh-session strategy reset
+   │ Hypothesis ledger            │  - Tiered rollback rules
    └──────────┬──────────────────┘
               ↓
    Report → .agents-output/security/
@@ -87,7 +94,7 @@ Reports are written to `.agents-output/security/YYYY-MM-DD-<scope>-security-revi
 | Layer | Contains | Does NOT contain |
 |-------|----------|-----------------|
 | Subagent prompt | Role, workflow steps, output location, completion checklist | Business logic, scoring formulas, MCP parameters |
-| SKILL.md | Cross-validation logic, conflict resolution, confidence scoring | MCP call examples, report template |
+| SKILL.md | Cross-validation logic, conflict resolution, confidence scoring, Fix-Verify Loop (prediction blocks, iteration protocol, rollback rules, hypothesis ledger) | MCP call examples, report template |
 | reference/ | MCP tool call patterns and parameters | Business logic |
 | templates/ | Report markdown structure | Analysis logic |
 
@@ -131,3 +138,15 @@ Add custom Semgrep rules to the manual pattern check in `security-reviewer.md` S
 ### Change the Codex prompt strategy
 
 Edit `reference/mcp-tools.md` Codex section to adjust what the Codex prompt asks for.
+
+### Extend the Known Fix Gate
+
+Add rows to the canonical fix pattern table in `SKILL.md` section 4.1 for vulnerability classes common in your codebase (e.g., SSRF, deserialization).
+
+### Adjust rollback sensitivity
+
+Edit the tiered rollback table in `SKILL.md` section 4.5. For stricter environments, promote "rule transferred" from "keep change" to "rollback."
+
+### Change the iteration cap
+
+The default is 3 rounds before human escalation (`SKILL.md` section 4.4). Reduce to 2 for faster feedback loops, or increase if your fix patterns require more exploration.
