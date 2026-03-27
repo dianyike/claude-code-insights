@@ -138,61 +138,132 @@ Where:
 
 ## 4. Fix-Verify Loop
 
-After findings are confirmed (confidence >= 50%), use Codex to get fix suggestions and verify them.
+After findings are confirmed (confidence >= 50%), enter the fix-verify loop to remediate and validate fixes.
 
-### 4.1 Request Fix from Codex
+### 4.0 Mode Boundary
 
-Use `codex-reply` with the existing threadId to request concrete fixes:
+**Sections 1-3 and Section 4 operate under fundamentally different structural guarantees.**
+
+- **Sections 1-3** (diagnostic): dual-source cross-validation with weighted scoring. Both Semgrep and Codex contribute findings independently, and the 60/40 weights govern classification.
+- **Section 4** (remediation): each round must have exactly **one strategy source**. Usually that source is Codex; if 4.1 matches a canonical fix pattern, the source becomes the canonical pattern instead. In either case, Semgrep's role narrows to **violation oracle** — it can confirm "this rule still fires" or "this rule stopped firing," but it cannot confirm that the root cause is resolved or that the fix direction is correct.
+
+The 60/40 diagnostic weights do NOT apply here. The constraints below exist to compensate for this single-proposer asymmetry — they are not bureaucracy.
+
+### 4.1 Known Fix Gate
+
+Before asking Codex for a fix strategy, check if the finding matches a canonical fix pattern:
+
+| CWE Category | Canonical Fix | Do NOT |
+|---|---|---|
+| SQL Injection (CWE-89) | Parameterized queries / prepared statements | String escaping, concat-based sanitization |
+| XSS (CWE-79) | Contextual output encoding / safe sink APIs | Manual regex stripping |
+| Hardcoded Secret (CWE-798) | Remove + rotate + env var / secret manager | Obfuscation, base64 encoding |
+| Path Traversal (CWE-22) | Allowlist + resolve-then-check canonical path | Blacklist patterns like `../` |
+
+**If match found**:
+1. Apply the canonical fix
+2. Still write the prediction block (see 4.2 Constraint 2) — the strategy source changes from Codex to canonical pattern, but the verification contract is identical
+3. Open a read-only Codex session (`mcp__codex__codex`) with the code + applied canonical fix for thread continuity — this ensures `codex-reply` is available for 4.3 verification
+4. Skip to 4.3
+
+**If no match** → proceed to 4.2.
+
+Rationale: For well-understood vulnerability classes, letting the model "be creative" only increases drift probability. The prediction block is not "for Codex" — it's the falsifiable target that makes verification meaningful.
+
+### 4.2 Request Fix from Codex
+
+For same-thread refinement, use `codex-reply` with the existing threadId to request a fix. If 4.4 requires a fresh strategy reset, open a new read-only `mcp__codex__codex` session using the fresh fix-strategy template in [reference/mcp-tools.md](reference/mcp-tools.md). Two hard constraints apply either way:
+
+**Constraint 1 — Single Root-Cause Hypothesis**
+
+Each round targets exactly ONE root-cause cluster. A single root cause may manifest across multiple call sites — fixing them together in one round is correct.
+
+What's prohibited: mixing unrelated fix directions in one round (e.g., fixing SQL injection AND XSS simultaneously). This isolates cause-effect so that Semgrep evidence is interpretable.
+
+**Constraint 2 — Prediction Block** (MANDATORY before applying any fix)
+
+Before applying the fix, write down the following prediction. This applies to BOTH the canonical path (4.1) and the Codex path (4.2):
 
 ```
-Tool: mcp__codex__codex-reply
-Parameters:
-  threadId: "<saved threadId>"
-  prompt: |
-    Based on the findings from your review, provide concrete fixes for each confirmed issue.
-
-    For each fix:
-    1. The exact code change (before → after)
-    2. Why this fix addresses the root cause
-    3. Any edge cases the fix might miss
-    4. Whether the fix could introduce new issues
-
-    Confirmed findings:
-    - [list findings with file:line]
+prediction:
+  root_cause_hypothesis: "<what you believe is the underlying cause>"
+  minimal_change_scope: "<which files:lines will be modified>"
+  expected_rules_to_clear: ["<semgrep-rule-id-1>", ...]
+  expected_grep_patterns_to_disappear: ["<pattern>", ...]
+  possible_new_findings: ["<rule-id or 'none'>"]
+  disconfirming_evidence: "<what result would prove this hypothesis WRONG>"
+  rollback_trigger: "<specific condition that means revert immediately>"
 ```
 
-### 4.2 Apply and Re-verify
+If the prediction cannot be stated concretely, the fix is too vague to apply. Stop and refine the hypothesis first.
 
-After applying fixes:
+For MCP prompt templates, see [reference/mcp-tools.md](reference/mcp-tools.md).
 
-1. Run Semgrep again on the modified files — confirm the original findings are gone
-2. Run Semgrep on the modified files — check for NEW findings introduced by the fix
-3. Use `codex-reply` to verify the fix is correct and complete:
+### 4.3 Apply and Re-verify
 
+After applying the fix:
+
+1. **Run Semgrep** on modified files — record the actual output
+2. **Compare actual output against prediction block point-by-point:**
+   - Did `expected_rules_to_clear` actually clear? (Y/N per rule)
+   - Did `expected_grep_patterns_to_disappear` actually disappear? (Y/N per pattern)
+   - Did any findings appear in `possible_new_findings`? Expected or unexpected?
+   - Did the `disconfirming_evidence` condition trigger?
+3. **Call Codex verify** (using the verify prompt from [reference/mcp-tools.md](reference/mcp-tools.md)) — Codex must compare against the prediction block, not just re-review the code
+4. **Classify the round outcome:**
+   - **Prediction confirmed**: all expected rules cleared, no unexpected findings → finding resolved
+   - **Prediction partially confirmed**: some rules cleared, others persist → record as hypothesis refinement evidence, proceed to next round. **Constraint**: partially confirmed only permits same root-cause family refinement. It does NOT permit switching to a new remediation direction in the same thread without recording the original hypothesis as failed or superseded
+   - **Prediction falsified**: disconfirming evidence triggered, or zero predictions matched → this is a hypothesis failure, not an implementation bug
+
+Key framing: Semgrep checks "does the violation pattern still match?" — NOT "is the code now secure."
+
+### 4.4 Iteration Protocol
+
+Cap at 3 rounds. Each round escalates the strategy diversity requirement:
+
+- **Round 1 fails**: Stay on same Codex threadId. Inject into the prompt: the failed prediction block, actual Semgrep output, and the specific mismatch. Ask Codex to **revise its root-cause hypothesis**, not just tweak the fix
+- **Round 2 fails**: MANDATORY strategy switch:
+  - Abandon the current threadId — start a **fresh Codex session**
+  - New prompt MUST include: both failed hypotheses, their predictions, actual outputs, and the explicit instruction: "propose a fundamentally different approach — the previous two attempts targeted [X] and both failed because [Y]"
+  - Purpose: break narrative inertia from accumulated thread context
+- **Round 3 fails**: Stop all automated repair. Escalate to human with a structured bundle:
+  - All 3 hypotheses with prediction blocks
+  - All 3 actual Semgrep outputs
+  - All 3 prediction-vs-actual comparisons
+  - Agent's assessment of why convergence failed
+
+### 4.5 Rollback Rules
+
+NOT a blanket "any new finding → revert." Apply tiered judgment:
+
+| Condition | Action | Reason |
+|---|---|---|
+| New HIGH/CRITICAL finding not in `possible_new_findings` | Immediate rollback | Unacceptable regression |
+| Original rule still fires AND zero predictions matched | Rollback | Hypothesis was entirely wrong, no value in keeping the change |
+| Rule transferred (old cleared, new appeared at same severity) | Mark as hypothesis failure, keep change, investigate in next round | May be progress toward correct direction |
+| Low-severity secondary signal appeared | Note in ledger, continue | Semgrep is not a truth oracle; minor noise is expected |
+
+### 4.6 Hypothesis Ledger
+
+Each round's hypothesis, prediction, actual output, and decision MUST be persisted — not just held in transient context.
+
+**Location**: Append as `## Fix-Verify Hypothesis Log` as the final section of the security report, after `## Supply Chain`.
+
+**Format per round**:
+
+```markdown
+### Round N — [CONFIRMED | PARTIALLY CONFIRMED | FALSIFIED | ROLLBACK]
+- **Hypothesis**: ...
+- **Prediction**: [paste prediction block]
+- **Actual Semgrep output**: [rule IDs fired / cleared]
+- **Prediction match**: [point-by-point comparison]
+- **Decision**: [applied / rolled back / escalated]
+- **Evidence carried forward**: [what the next round should know]
 ```
-Tool: mcp__codex__codex-reply
-Parameters:
-  threadId: "<saved threadId>"
-  prompt: |
-    I applied fixes based on your suggestions. Please review the CURRENT version
-    of the code and verify:
 
-    1. Are all previously reported issues properly fixed?
-    2. Are there any NEW issues introduced by the fixes?
-    3. Any remaining edge cases or security concerns?
+Purpose: prevent the agent from repeating the same class of mistake, and give the human reviewer a diagnostic trail if escalation occurs.
 
-    Be specific about line numbers and whether each original finding is resolved
-    or still present.
-```
-
-### 4.3 Iteration Protocol
-
-- If Codex finds remaining issues in the re-verify step, repeat 4.1-4.2
-- Cap at 3 iterations — if issues persist after 3 rounds, escalate to human review
-- Each iteration MUST re-run Semgrep (not just Codex) to avoid regression
-- Never declare "all fixed" based solely on Codex's claim — Semgrep must also confirm
-
-### 4.4 Common Fix Pitfalls
+### 4.7 Common Fix Pitfalls
 
 | Pitfall | Example | Prevention |
 |---------|---------|------------|
@@ -201,6 +272,7 @@ Parameters:
 | bare `except:` catches SystemExit | `sys.exit()` inside `try/except:` block | Check that except clauses use `except Exception:` not `except:` |
 | Fix for wrong version | Checking latest when user specified `@^1.0.0` | Always resolve to exact version before checking |
 | Partial fix | Fixed one call site but same pattern exists elsewhere | Grep for the pattern project-wide after fixing |
+| Hypothesis drift | Round 1 targets SQL injection, Round 2 silently shifts to input validation | Prediction block comparison catches scope change |
 
 ## 5. Gotchas
 
@@ -208,7 +280,7 @@ Parameters:
 - Codex may hallucinate line numbers — always verify with Read before citing
 - Semgrep supply chain scan reads lockfiles from CWD — make sure CWD is project root
 - Codex `read-only` sandbox prevents it from running verification scripts — you must do that yourself
-- If Codex returns a threadId, save it. If conflict resolution needs follow-up, use `codex-reply` with that threadId instead of starting a new session (preserves context, saves tokens)
+- If Codex returns a threadId, save it. For same-thread refinement and conflict follow-up, use `codex-reply` with that threadId. Exception: when 4.4 requires a strategy reset, start a fresh session and save the new threadId
 - Semgrep findings JSON structure may vary between local scan and platform findings — normalize before comparing
 - Never declare "all issues fixed" after applying Codex's suggestions without re-running both Codex verify AND Semgrep re-scan — Codex can confirm fixes that are actually incomplete
 - When Codex says "no new issues", still run Semgrep — Codex misses structural issues like bare `except:` catching `SystemExit`, `pipefail` interactions, and shell quoting edge cases

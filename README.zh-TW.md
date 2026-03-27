@@ -29,7 +29,7 @@ Claude Code 的 CLAUDE.md、Skills 與 Subagents 最佳實踐指南。
 
 | 範例 | 說明 | 難度 |
 |------|------|------|
-| [examples/security-reviewer](examples/security-reviewer) | 雙重驗證安全審查 Subagent — Semgrep + Codex 交叉驗證，附 Fix-Verify 迴圈、信心分數與衝突處理 | 進階 |
+| [examples/security-reviewer](examples/security-reviewer) | 雙重驗證安全審查 Subagent — Semgrep + Codex 交叉驗證，含收斂強化的 Fix-Verify Loop（可反駁預測、fresh-session 策略切換、分級回退、假設帳本），實踐 [Harness Engineering](https://openai.com/index/harness-engineering/) 方法論 | 進階 |
 
 ### Hook 範例
 

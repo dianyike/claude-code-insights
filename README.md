@@ -29,7 +29,7 @@ The three guides cross-reference each other. Recommended reading order: CLAUDE.m
 
 | Example | Description | Difficulty |
 |---------|-------------|------------|
-| [examples/security-reviewer](examples/security-reviewer) | Dual-verification security review Subagent — Semgrep + Codex cross-validation with Fix-Verify loop, confidence scoring, and conflict resolution | Advanced |
+| [examples/security-reviewer](examples/security-reviewer) | Dual-verification security review Subagent — Semgrep + Codex cross-validation with a convergence-hardened Fix-Verify Loop (falsifiable predictions, fresh-session strategy reset, tiered rollback, hypothesis ledger), implementing [Harness Engineering](https://openai.com/index/harness-engineering/) methodology | Advanced |
 
 ### Hook Examples
 
