@@ -1,82 +1,84 @@
 # Claude Code Insights
 
-Claude Code Skills 與 Subagent 的中文最佳實踐指南。
+English | [繁體中文](README.zh-TW.md)
 
-本倉庫的內容主要引用、整理自 Anthropic 官方文檔、社群文章及高星 GitHub 倉庫，觀點與設計模式歸功於原作者們。這裡是我在學習過程中所見所聞的東西的整理與分享，而非**原創研究**。
+A best practices guide for Claude Code CLAUDE.md, Skills, and Subagents.
 
-## 適合誰
+This repository compiles and organizes content primarily from Anthropic's official documentation, community articles, and popular GitHub repositories — credit goes to the original authors. This is a curated collection of what I've learned along the way, not **original research**.
 
-從剛接觸 Claude Code 的新手到想深入掌握 Skills 和 Subagent 設計模式的開發者。
+## Who Is This For
 
-- **新手**：從 CLAUDE.md 指南開始，建立正確的基礎觀念
-- **進階**：Skills 和 Subagent 指南涵蓋設計模式與架構策略
+Developers ranging from Claude Code beginners to those looking to master Skills and Subagent design patterns.
 
-## 內容
+- **Beginners**: Start with the CLAUDE.md guide to build a solid foundation
+- **Advanced**: The Skills and Subagent guides cover design patterns and architectural strategies
 
-| 文件 | 說明 | 適合 |
-|------|------|------|
-| [claude-md-best-practices.md](claude-md-best-practices.md) | CLAUDE.md 最佳實踐 — 為什麼不用 `/init`、三層架構模型、Hooks 取代指令、反模式 | 新手入門 |
-| [skills-best-practices.md](skills-best-practices.md) | Skills 最佳實踐 — 檔案格式、載入機制、內容寫作原則、進階模式、設計模板 | 進階 |
-| [subagent-best-practices.md](subagent-best-practices.md) | Subagent 最佳實踐 — 黑箱問題與解法、結果持久化、工具範圍策略、架構模式 | 進階 |
+## Contents
 
-三份指南互相引用，建議依序閱讀：CLAUDE.md → Skills → Subagent。
+| File | Description | Audience |
+|------|-------------|----------|
+| [claude-md-best-practices.md](claude-md-best-practices.md) | CLAUDE.md Best Practices — why not to use `/init`, the three-layer architecture model, Hooks over directives, anti-patterns | Beginners |
+| [skills-best-practices.md](skills-best-practices.md) | Skills Best Practices — file format, loading mechanics, content writing principles, advanced patterns, design templates | Advanced |
+| [subagent-best-practices.md](subagent-best-practices.md) | Subagent Best Practices — the black-box problem and solutions, result persistence, tool scoping strategies, architectural patterns | Advanced |
 
-## 實戰範例
+The three guides cross-reference each other. Recommended reading order: CLAUDE.md → Skills → Subagent.
 
-### Subagent 範例
+## Practical Examples
 
-| 範例 | 說明 | 難度 |
-|------|------|------|
-| [examples/security-reviewer](examples/security-reviewer) | 雙重驗證安全審查 Subagent — Semgrep + Codex 交叉驗證，附 Fix-Verify 迴圈、信心分數與衝突處理 | 進階 |
+### Subagent Examples
 
-### Hook 範例
+| Example | Description | Difficulty |
+|---------|-------------|------------|
+| [examples/security-reviewer](examples/security-reviewer) | Dual-verification security review Subagent — Semgrep + Codex cross-validation with Fix-Verify loop, confidence scoring, and conflict resolution | Advanced |
 
-| 範例 | 說明 | 難度 |
-|------|------|------|
-| [examples/npm-supply-chain-defense](examples/npm-supply-chain-defense) | npm 供應鏈三層防禦 — `.npmrc` 腳本封鎖 + PreToolUse Hook 檢查（registry、OSV.dev、版本解析、CLI 語法驗證）+ Semgrep supply chain 掃描。附 42 個回歸測試 | 進階 |
+### Hook Examples
 
-### Skills 範例
+| Example | Description | Difficulty |
+|---------|-------------|------------|
+| [examples/npm-supply-chain-defense](examples/npm-supply-chain-defense) | npm supply chain three-layer defense — `.npmrc` script blocking + PreToolUse Hook checks (registry, OSV.dev, version resolution, CLI syntax validation) + Semgrep supply chain scanning. Includes 42 regression tests | Advanced |
 
-以下 Skills 參考自 [mattpocock/skills](https://github.com/mattpocock/skills)（設計樹、TDD vertical slice 等概念的實踐），並依據本倉庫的最佳實踐指南進行改造：模板抽離至 `templates/`、參考文件歸入 `reference/`、補齊 Gotchas 區段。
+### Skills Examples
 
-| 範例 | 說明 | 用途 |
-|------|------|------|
-| [examples/grill-me](examples/grill-me) | 設計質詢 — 遍歷 decision tree 的每個分支，逐一解決設計決策的依賴關係 | 編碼前的設計壓力測試 |
-| [examples/tdd](examples/tdd) | TDD 工作流 — red-green-refactor 垂直切片，附測試範例、mock 指南、深模組設計參考 | 功能開發與 Bug 修復 |
-| [examples/prd-to-plan](examples/prd-to-plan) | PRD 轉實作計畫 — 將需求拆成 tracer bullet 垂直切片，輸出至 `./plans/` | 需求分解與階段規劃 |
-| [examples/write-a-skill](examples/write-a-skill) | Skill 建構元技能 — 內容類型決策、調用控制、安全配置、Gotchas 迭代閉環 | 建立新的 Skill |
+The following Skills are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (implementing concepts like design trees and TDD vertical slices), reworked according to this repository's best practices guide: templates extracted to `templates/`, reference materials moved to `reference/`, and Gotchas sections added.
 
-**Solo 開發工作流**：`/grill-me`（質詢設計）→ `/prd-to-plan`（拆成 phase）→ `/tdd`（逐個實作）
+| Example | Description | Use Case |
+|---------|-------------|----------|
+| [examples/grill-me](examples/grill-me) | Design Interrogation — traverses every branch of a decision tree, resolving design decision dependencies one by one | Pre-coding design stress test |
+| [examples/tdd](examples/tdd) | TDD Workflow — red-green-refactor vertical slices with test examples, mock guidelines, and deep module design reference | Feature development and bug fixes |
+| [examples/prd-to-plan](examples/prd-to-plan) | PRD to Implementation Plan — breaks requirements into tracer bullet vertical slices, outputs to `./plans/` | Requirements decomposition and phase planning |
+| [examples/write-a-skill](examples/write-a-skill) | Skill Builder Meta-Skill — content type decisions, invocation control, security configuration, Gotchas iteration loop | Creating new Skills |
 
-> **Gotchas 是 Skill 的靈魂**：每個 Skill 裡信號最強的不是教程，而是團隊踩過的坑。每次 Skill 執行遇到非預期失敗，把失敗模式寫回 Gotchas — 這個迭代閉環讓 Skill 越用越準。詳見 [skills-best-practices.md § 4.3](skills-best-practices.md#43-構建-gotchas-部分)。
+**Solo Development Workflow**: `/grill-me` (interrogate the design) → `/prd-to-plan` (break into phases) → `/tdd` (implement one by one)
 
-> **注意**：範例可直接複製到 `.claude/skills/` 使用。建議先讀完兩份指南，以便理解設計原理並依需求調整。
+> **Gotchas Are the Soul of a Skill**: The strongest signal in any Skill isn't the tutorial — it's the pitfalls the team has hit. Every time a Skill execution encounters an unexpected failure, write the failure pattern back into Gotchas — this feedback loop makes the Skill more accurate over time. See [skills-best-practices.md § 4.3](skills-best-practices.md#43-building-the-gotchas-section) for details.
 
-## 快速導覽
+> **Note**: These examples can be copied directly into `.claude/skills/` for use. We recommend reading both guides first to understand the design rationale and adapt them to your needs.
 
-### CLAUDE.md 指南重點
+## Quick Overview
 
-- 為什麼不建議用 `/init` 自動生成（附論文數據）
-- 從零開始的正確姿勢：先不寫，出問題再加
-- 三層架構模型：強制執行層 / 高頻召回層 / 按需查閱層
-- 用 Hooks 取代 CLAUDE.md 指令（確定性 > 建議）
-- 五大反模式與維護實務
+### CLAUDE.md Guide Highlights
 
-### Skills 指南重點
+- Why you shouldn't use `/init` for auto-generation (with supporting research data)
+- The right approach from scratch: start with nothing, add rules only when problems arise
+- Three-layer architecture model: Enforcement Layer / High-Frequency Recall Layer / On-Demand Reference Layer
+- Using Hooks instead of CLAUDE.md directives (determinism > suggestions)
+- Five major anti-patterns and maintenance practices
 
-- Skill 是什麼、與 CLAUDE.md 的差異
-- Frontmatter 欄位完整參考
-- 自動觸發 vs 手動調用的控制方式
-- Skill vs Subagent vs CLAUDE.md 決策矩陣
-- 安全守則與迭代方法論
+### Skills Guide Highlights
 
-### Subagent 指南重點
+- What a Skill is and how it differs from CLAUDE.md
+- Complete Frontmatter field reference
+- Auto-trigger vs manual invocation control methods
+- Skill vs Subagent vs CLAUDE.md decision matrix
+- Security guidelines and iteration methodology
 
-- 何時該用 Subagent（Anthropic 官方觀點：大多數場景不需要）
-- 黑箱與一次性問題的四種解法
-- 研究型、審查型 Agent 設計模板
-- Hub-and-Spoke 架構模式
-- Early Victory Problem 與緩解策略
+### Subagent Guide Highlights
+
+- When to use a Subagent (Anthropic's official stance: most scenarios don't need one)
+- Four solutions for black-box and one-shot problems
+- Research-type and review-type Agent design templates
+- Hub-and-Spoke architectural pattern
+- The Early Victory Problem and mitigation strategies
 
 ## License
 
