@@ -46,9 +46,48 @@ Claude Code 的 CLAUDE.md、Skills 與 Subagents 最佳實踐指南。
 | [examples/grill-me](examples/grill-me) | 設計質詢 — 走訪決策樹的每個分支，逐一釐清設計決策間的依賴關係 | 編碼前的設計壓力測試 |
 | [examples/tdd](examples/tdd) | TDD 工作流程 — red-green-refactor 垂直切片，附測試範例、mock 指南與深模組設計參考 | 功能開發與 Bug 修復 |
 | [examples/prd-to-plan](examples/prd-to-plan) | PRD 轉實作計畫 — 將需求拆成 tracer bullet 垂直切片，輸出至 `./plans/` | 需求拆解與階段規劃 |
-| [examples/write-a-skill](examples/write-a-skill) | Skill Builder 後設 Skill — 內容類型決策、呼叫控制、安全配置、Gotchas 迭代回饋循環 | 建立新 Skill |
+| [examples/write-a-skill](examples/write-a-skill) | Skill Builder 後設 Skill — 內容類型決策、呼叫控制、安全配置、Gotchas 迭代回饋循環，含 eval 工作流參考 | 建立新 Skill |
+| [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill 評測工具包 — eval 驅動測試、量化基準測試、盲測 A/B 比較、description 觸發優化自動迭代迴圈 | 驗證與優化現有 Skill |
 
 **個人開發工作流程**：`/grill-me`（質詢設計）→ `/prd-to-plan`（拆成階段）→ `/tdd`（逐步實作）
+
+**Skill 開發工作流程**：`/write-a-skill`（撰寫 Skill）→ `/skill-eval-toolkit`（評測與優化）
+
+#### write-a-skill — Skill 撰寫指南
+
+用於**從零建立新的 Skill**，涵蓋完整的撰寫生命週期：
+
+- 內容類型決策（Reference vs Task）與呼叫控制（`disable-model-invocation`、`context: fork` 等）
+- Frontmatter schema、漸進式揭露（metadata → body → bundled resources）
+- Description 撰寫原則 — 以觸發情境為導向，而非功能摘要
+- 安全檢查清單與審查流程
+- Gotchas 迭代回饋循環 — 讓 Skill 隨使用愈來愈準的機制
+
+```
+你：「我想建一個能從 OpenAPI spec 自動產生 API 文件的 skill」
+Claude：（載入 write-a-skill，訪談需求，產出 SKILL.md 草稿，跑 smoke test）
+```
+
+#### skill-eval-toolkit — Eval 驅動的測試與優化工具包
+
+用於**評測與改善已存在的 Skill**，提供結構化的 eval 迴圈與 4 個專職 subagent：
+
+| Subagent | 職責 |
+|----------|------|
+| **grader** | 評估 assertions 是否通過，同時回頭檢視 eval 本身的品質 |
+| **comparator** | 盲測 A/B 比較 — 隱藏來源，純粹根據輸出品質評分 |
+| **comparison-analyzer** | 事後分析 — 解盲後找出贏家勝出的原因 |
+| **benchmark-analyzer** | 從 benchmark 數據中挖掘聚合統計隱藏的模式 |
+
+工作流程：建立測試 prompt → with-skill 與 baseline 並行執行 → 評分 → 聚合 benchmark → 互動式 viewer 供人工審查 → 改善 → 重複。另含自動化 description 觸發優化（train/test split、迭代改進）。
+
+```
+你：「評測我的 json-diff skill，看看它到底有沒有用」
+Claude：（載入 skill-eval-toolkit，建測試案例，並行 spawn runs，
+         評分輸出，開啟 viewer，呈現結果）
+```
+
+> **什麼時候用哪個**：如果問題是「這個 skill 該怎麼寫？」→ `write-a-skill`。如果問題是「這個 skill 到底好不好用？」→ `skill-eval-toolkit`。大部分 skill 從前者起步，需要量化驗證時再引入後者。
 
 > **Gotchas 是 Skill 的靈魂**：一個 Skill 最有價值的往往不是教學內容，而是團隊實際踩過的坑。每次 Skill 執行遇到非預期失敗時，都把失敗模式寫回 Gotchas；這個回饋循環會讓 Skill 隨著使用愈來愈準。詳見 [skills-best-practices.zh-TW.md § 4.3](skills-best-practices.zh-TW.md#43-構建-gotchas-部分)。
 

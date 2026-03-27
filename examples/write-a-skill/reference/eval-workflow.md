@@ -110,6 +110,19 @@ Write 16-20 test queries — a mix of should-trigger and should-not-trigger:
 
 Skills appear in Claude's `available_skills` list with their name + description. Claude only consults skills for tasks it can't easily handle on its own — simple one-step queries may not trigger even with a perfect description, because Claude handles them directly. Your eval queries should be substantive enough that Claude would benefit from consulting a skill.
 
+## Blind A/B Comparison (Optional)
+
+When you need high-confidence comparison between two skill versions — beyond what side-by-side human review provides — use blind comparison:
+
+1. Run both skill versions on the same prompts
+2. Present the two outputs to an independent evaluator *without revealing which is which*
+3. Let the evaluator judge on content (correctness, completeness, accuracy) and structure (organization, formatting, usability)
+4. After scoring, "unblind" the results and analyze why the winner won
+
+**Lightweight version** (no tooling needed): Manually copy two outputs into a prompt, label them "Output A" and "Output B", and ask Claude to compare. This works for quick checks.
+
+**Automated version**: The `skill-eval-toolkit` provides dedicated subagents (`comparator.md` for blind scoring, `comparison-analyzer.md` for post-hoc analysis) that formalize this process with structured rubrics and JSON output.
+
 ## Quantitative Benchmarking
 
 For rigorous comparison, track these metrics across runs:
@@ -126,3 +139,14 @@ Look for:
 - Assertions that always fail in both configs — may be broken or beyond capability
 - High variance — indicates flaky behavior worth investigating
 - Time/token tradeoffs — a skill that doubles execution time for a 5% pass rate improvement may not be worth it
+
+## Scaling Up with skill-eval-toolkit
+
+When manual eval cycles become insufficient — too many test cases, need for statistical rigor, or description optimization — consider the **skill-eval-toolkit** (`examples/skill-eval-toolkit/`). It provides:
+
+- **Parallel test execution** with automated grading, aggregation, and an interactive HTML viewer
+- **Benchmark statistics** (mean +/- stddev) with per-assertion variance analysis
+- **Description optimization loop** that automatically iterates on trigger accuracy with train/test split
+- **Blind A/B comparison** with dedicated subagents for unbiased scoring
+
+The toolkit assumes you already know how to write skills (content types, frontmatter, progressive disclosure). Use this guide to design the skill, then the toolkit to validate and optimize it.

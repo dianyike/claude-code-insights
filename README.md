@@ -46,9 +46,48 @@ The following Skills are adapted from [mattpocock/skills](https://github.com/mat
 | [examples/grill-me](examples/grill-me) | Design Interrogation — traverses every branch of a decision tree, resolving design decision dependencies one by one | Pre-coding design stress test |
 | [examples/tdd](examples/tdd) | TDD Workflow — red-green-refactor vertical slices with test examples, mock guidelines, and deep module design reference | Feature development and bug fixes |
 | [examples/prd-to-plan](examples/prd-to-plan) | PRD to Implementation Plan — breaks requirements into tracer bullet vertical slices, outputs to `./plans/` | Requirements decomposition and phase planning |
-| [examples/write-a-skill](examples/write-a-skill) | Skill Builder Meta-Skill — content type decisions, invocation control, security configuration, Gotchas iteration loop | Creating new Skills |
+| [examples/write-a-skill](examples/write-a-skill) | Skill Builder Meta-Skill — content type decisions, invocation control, security configuration, Gotchas iteration loop. Includes eval workflow reference | Creating new Skills |
+| [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill Eval Toolkit — eval-driven testing, quantitative benchmarking, blind A/B comparison, description trigger optimization with automated iteration loop | Validating and optimizing existing Skills |
 
 **Solo Development Workflow**: `/grill-me` (interrogate the design) → `/prd-to-plan` (break into phases) → `/tdd` (implement one by one)
+
+**Skill Development Workflow**: `/write-a-skill` (author the skill) → `/skill-eval-toolkit` (evaluate and optimize)
+
+#### write-a-skill — Skill Authoring Guide
+
+Use when you want to **create a new skill from scratch**. Covers the full authoring lifecycle:
+
+- Content type decision (Reference vs Task) and invocation control (`disable-model-invocation`, `context: fork`, etc.)
+- Frontmatter schema, progressive disclosure (metadata → body → bundled resources)
+- Description writing — trigger-oriented keywords, not feature summaries
+- Security checklist and review process
+- Gotchas iteration loop — the feedback mechanism that makes skills more accurate over time
+
+```
+You: "I want to create a skill that generates API documentation from OpenAPI specs"
+Claude: (loads write-a-skill, interviews you, drafts SKILL.md, runs smoke tests)
+```
+
+#### skill-eval-toolkit — Eval-Driven Testing and Optimization
+
+Use when you have **an existing skill and want to measure or improve it**. Provides a structured eval loop with 4 specialized subagents:
+
+| Subagent | Role |
+|----------|------|
+| **grader** | Evaluate assertions against outputs, critique eval quality |
+| **comparator** | Blind A/B comparison — scores two outputs without knowing which is which |
+| **comparison-analyzer** | Post-hoc analysis — unblinds results, identifies why the winner won |
+| **benchmark-analyzer** | Surface patterns in benchmark data that aggregate stats hide |
+
+The workflow: create test prompts → run with-skill and baseline in parallel → grade → aggregate benchmarks → interactive viewer for human review → improve → repeat. Also includes automated description trigger optimization (train/test split, iterative improvement).
+
+```
+You: "Evaluate my json-diff skill and tell me if it actually adds value"
+Claude: (loads skill-eval-toolkit, creates test cases, spawns parallel runs,
+         grades outputs, launches viewer, shows you the results)
+```
+
+> **When to use which**: If the question is "how should I structure this skill?" → `write-a-skill`. If the question is "is this skill actually working well?" → `skill-eval-toolkit`. Most skills start with the former and graduate to the latter when you need quantitative rigor.
 
 > **Gotchas Are the Soul of a Skill**: The strongest signal in any Skill isn't the tutorial — it's the pitfalls the team has hit. Every time a Skill execution encounters an unexpected failure, write the failure pattern back into Gotchas — this feedback loop makes the Skill more accurate over time. See [skills-best-practices.md § 4.3](skills-best-practices.md#43-building-the-gotchas-section) for details.
 
