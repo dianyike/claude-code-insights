@@ -9,7 +9,7 @@ description: >
 # --- Subagent isolation (uncomment if needed) ---
 # context: fork
 # agent: Explore
-# --- Tool restrictions (ALWAYS set for task skills) ---
+# --- Tool restrictions (set for task skills) ---
 # allowed-tools: Read, Grep, Glob
 # --- Optional ---
 # argument-hint: [argument-name]
@@ -26,7 +26,7 @@ description: >
 ## Workflow
 
 [High-level steps. Use goal-oriented language, not rigid commands.
-Let Claude adapt order based on context.]
+Let Claude adapt order based on context. Explain *why* each step matters.]
 
 1. ...
 2. ...
@@ -45,6 +45,14 @@ Let Claude adapt order based on context.]
 ## Additional resources
 
 - For detailed reference, see [reference/details.md](reference/details.md)
+
+## Validation (optional)
+
+[For skills with objectively verifiable outputs, define how to test them.
+Not all skills need this — subjective or reference-only skills can skip it.]
+
+- Test prompt 1: "[realistic user request]" — expect [outcome]
+- Test prompt 2: "[edge case request]" — expect [outcome]
 
 ## Gotchas
 
