@@ -46,11 +46,11 @@ Claude Code 的 CLAUDE.md、Skills 與 Subagents 最佳實踐指南。
 | [examples/grill-me](examples/grill-me) | 設計質詢 — 走訪決策樹的每個分支，逐一釐清設計決策間的依賴關係 | 編碼前的設計壓力測試 |
 | [examples/write-prd](examples/write-prd) | 撰寫 PRD — 從設計決策或模糊想法產出結構化需求文件，銜接 grill-me 與 prd-to-plan | 需求撰寫與結構化 |
 | [examples/tdd](examples/tdd) | TDD 工作流程 — red-green-refactor 垂直切片，附測試範例、mock 指南與深模組設計參考 | 功能開發與 Bug 修復 |
-| [examples/prd-to-plan](examples/prd-to-plan) | PRD 轉實作計畫 — 將需求拆成 tracer bullet 垂直切片，輸出至 `./plans/` | 需求拆解與階段規劃 |
+| [examples/prd-to-plan](examples/prd-to-plan) | PRD 轉實作計畫 — 將需求拆成 tracer bullet 垂直切片，輸出至 `./plans/`，並可選擇加入 Codex 審核高風險計畫 | 需求拆解與階段規劃 |
 | [examples/write-a-skill](examples/write-a-skill) | Skill Builder 後設 Skill — 內容類型決策、呼叫控制、安全配置、Gotchas 迭代回饋循環，含 eval 工作流參考 | 建立新 Skill |
 | [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill 評測工具包 — eval 驅動測試、量化基準測試、盲測 A/B 比較、description 觸發優化自動迭代迴圈 | 驗證與優化現有 Skill |
 
-**個人開發工作流程**：`/grill-me`（質詢設計）→ `/write-prd`（撰寫 PRD）→ `/prd-to-plan`（拆成階段）→ `/tdd`（逐步實作）
+**個人開發工作流程**：`/grill-me`（質詢設計）→ `/write-prd`（撰寫 PRD）→ `/prd-to-plan`（拆成階段，可選擇用 Codex 審核）→ `/tdd`（逐步實作）
 
 **Skill 開發工作流程**：`/write-a-skill`（撰寫 Skill）→ `/skill-eval-toolkit`（評測與優化）
 

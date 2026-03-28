@@ -1,0 +1,50 @@
+{
+  "skill_name": "prd-to-plan",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "幫我根據這份 PRD 拆成 implementation plan：evals/files/login-redesign-prd.md",
+      "expected_output": "A phased implementation plan that starts with durable architectural decisions, then breaks the work into thin tracer-bullet vertical slices. The plan should cover all PRD user stories, sequence phases by dependency, and avoid horizontal slicing such as 'backend first, frontend later'.",
+      "files": ["evals/files/login-redesign-prd.md"],
+      "expectations": [
+        "Plan includes a durable architectural decisions header derived from the PRD",
+        "All PRD user stories are mapped to at least one phase",
+        "Each phase is a vertical slice spanning end-to-end behavior, not a horizontal layer-only phase",
+        "Phases are thin, demoable, and ordered by dependency",
+        "Plan does NOT include brittle implementation details such as file names, function names, or low-level call sequences"
+      ],
+      "assertions": [
+        {
+          "id": "arch-decisions-header",
+          "name": "Has durable architectural decisions header",
+          "type": "qualitative",
+          "criteria": "Plan begins with a section identifying durable architectural decisions (route patterns, schema shapes, auth approach, data models) before listing phases"
+        },
+        {
+          "id": "story-coverage",
+          "name": "All PRD user stories mapped to phases",
+          "type": "qualitative",
+          "criteria": "Every user story from the PRD (P0: single-screen login, social sign-in, magic link, error messages; P1: fallback path, resend guidance, risk checks; P2: remember-me) is covered by at least one phase"
+        },
+        {
+          "id": "vertical-slices",
+          "name": "Phases are vertical slices not horizontal layers",
+          "type": "qualitative",
+          "criteria": "Each phase cuts through multiple layers (e.g. schema + API + UI + tests), not organized as 'backend phase' then 'frontend phase' then 'testing phase'"
+        },
+        {
+          "id": "demoable-sequencing",
+          "name": "Phases are thin, demoable, and dependency-ordered",
+          "type": "qualitative",
+          "criteria": "Each phase produces a demoable or verifiable increment. Phases are ordered so earlier phases don't depend on later ones. Prefer many thin slices over few thick ones"
+        },
+        {
+          "id": "no-impl-details",
+          "name": "No brittle implementation details",
+          "type": "qualitative",
+          "criteria": "Plan does NOT contain specific file names, function names, class names, or low-level API call sequences. It uses durable decisions (route paths, schema shapes, model names) instead"
+        }
+      ]
+    }
+  ]
+}

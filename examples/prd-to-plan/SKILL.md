@@ -44,7 +44,28 @@ Break the PRD into **tracer bullet** phases. Each phase is a thin vertical slice
 - Do NOT include specific file names, function names, or implementation details that are likely to change as later phases are built
 - DO include durable decisions: route paths, schema shapes, data model names
 
-### 5. Quiz the user
+### 5a. Optional Codex review
+
+For complex, high-risk, or multi-phase plans, run an **optional review pass** before presenting the breakdown to the user. This is a review step, not a replacement for the planning skill.
+
+Use this when any of the following are true:
+
+- The feature touches auth, payments, migrations, or external integrations
+- The PRD still has important open questions or architectural uncertainty
+- The phase breakdown is large enough that merge/split mistakes are likely
+- Multiple engineers will implement the plan and phase boundaries need to be defensible
+
+Review focus:
+
+- Is each phase a true vertical slice rather than a horizontal layer split?
+- Are all PRD user stories covered by at least one phase?
+- Are there hidden sequencing or dependency mistakes between phases?
+- Did the plan leak too much implementation detail?
+- Should any phases be merged or split further?
+
+If Codex or another review agent is available, use the prompt patterns in [reference/codex-review.md](reference/codex-review.md). If the review finds material issues, revise the draft before showing it to the user.
+
+### 5b. Quiz the user
 
 Present the proposed breakdown as a numbered list. For each phase show:
 
@@ -71,7 +92,9 @@ Create `./plans/` if it doesn't exist. Write the plan as a Markdown file named a
 - [ ] Each phase is a vertical slice (touches all layers end-to-end)
 - [ ] User approved the phase breakdown
 - [ ] Plan file written to `./plans/` with confirmed filename
+- [ ] If an optional review pass was used, material findings were either incorporated or surfaced to the user
 
 ## Gotchas
 
+- **Codex review is a review pass, not the main planner**: The plan should still be authored locally, then challenged. If you outsource the whole planning step to the reviewer, you lose control of the phase structure and the review becomes less meaningful.
 - **Iterate this section**: After each planning session, append new gotchas here
