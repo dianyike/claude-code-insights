@@ -26,6 +26,7 @@ from urllib.error import URLError
 # ── Config ──────────────────────────────────────────────────────────
 MIN_WEEKLY_DOWNLOADS = 100
 MAX_AGE_DAYS_FOR_NEW_WARNING = 7
+CHECK_MODE = os.environ.get("NPM_PKG_CHECK_MODE", "dynamic").strip().lower() or "dynamic"
 SAFE_PACKAGES_FILE = os.environ.get(
     "NPM_PKG_CHECK_SAFE_LIST",
     os.path.expanduser("~/.claude/scripts/npm-safe-packages.txt"),
@@ -219,7 +220,8 @@ def resolve_option(pm, flag, arity_table):
 
 def extract_packages(words):
     """
-    State machine parser. Returns (packages, pm, scope) or ("__BLOCK__:reason", None, None).
+    State machine parser. Returns (packages, pm, scope, is_global)
+    or ("__BLOCK__:reason", None, None, None).
     packages: list of (name, version_spec)
     pm: detected package manager
     scope: "prod" | "dev" | "optional" | "peer" (from flags, default "prod")
@@ -230,6 +232,7 @@ def extract_packages(words):
     skip_next = False
     end_of_options = False
     detected_scope = "prod"  # default
+    is_global = False
 
     for word in words:
         if skip_next:
@@ -250,9 +253,11 @@ def extract_packages(words):
                 end_of_options = True
                 continue
             if word.startswith("-") and not end_of_options:
+                if word.split("=", 1)[0] in {"--global", "-g"}:
+                    is_global = True
                 arity, known = resolve_option(current_pm, word, OPTION_ARITY)
                 if not known:
-                    return f"__BLOCK__:unrecognized option '{word}' for {current_pm}", None, None
+                    return f"__BLOCK__:unrecognized option '{word}' for {current_pm}", None, None, None
                 if arity == 1:
                     skip_next = True
                 continue
@@ -268,6 +273,8 @@ def extract_packages(words):
                 end_of_options = True
                 continue
             if word.startswith("-") and not end_of_options:
+                if word.split("=", 1)[0] in {"--global", "-g"}:
+                    is_global = True
                 # Check scope flags before option validation
                 scope_table = SCOPE_FLAGS.get(current_pm, {})
                 base_flag = word.split("=", 1)[0] if "=" in word else word
@@ -276,7 +283,7 @@ def extract_packages(words):
 
                 arity, known = resolve_option(current_pm, word, OPTION_ARITY)
                 if not known:
-                    return f"__BLOCK__:unrecognized option '{word}' for {current_pm}", None, None
+                    return f"__BLOCK__:unrecognized option '{word}' for {current_pm}", None, None, None
                 if arity == 1:
                     skip_next = True
                 continue
@@ -314,7 +321,7 @@ def extract_packages(words):
             if re.match(r"^(@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*$", name):
                 packages.append((name, version))
 
-    return packages, current_pm, detected_scope
+    return packages, current_pm, detected_scope, is_global
 
 def resolve_version(pkg, spec, abbrev):
     if not spec:
@@ -415,24 +422,40 @@ if not command:
 words = shell_tokenize(command)
 result = extract_packages(words)
 
-# extract_packages returns a tuple of 3; string on parse failure
+# extract_packages returns a tuple of 4; string on parse failure
 if isinstance(result[0], str) and result[0].startswith("__BLOCK__:"):
     reason = result[0].split(":", 1)[1]
     print(f"🚫 BLOCKED — command parse error: {reason}")
     write_log(make_log_entry(None, None, None, None, None, "blocked", "unknown_option", reason))
     sys.exit(2)
 
-packages, detected_pm, dep_scope = result
-if not packages:
-    sys.exit(0)
+packages, detected_pm, dep_scope, is_global = result
 
 safe_list = load_safe_list()
 blocked = False
+
+if is_global:
+    print("🚫 BLOCKED — global package installs are not allowed in this workflow")
+    if packages:
+        for pkg, spec in packages:
+            write_log(make_log_entry(detected_pm, pkg, spec, None, dep_scope, "blocked", "global_install", None))
+    else:
+        write_log(make_log_entry(detected_pm, None, None, None, dep_scope, "blocked", "global_install", None))
+    sys.exit(2)
+
+if not packages:
+    sys.exit(0)
 
 for pkg, spec in packages:
     if pkg in safe_list:
         print(f"✓ {pkg} (whitelisted)")
         write_log(make_log_entry(detected_pm, pkg, spec, None, dep_scope, "allow", "whitelisted", None))
+        continue
+
+    if CHECK_MODE == "allowlist-only":
+        print(f"🚫 {pkg} — BLOCKED (not in allowlist)")
+        write_log(make_log_entry(detected_pm, pkg, spec, None, dep_scope, "blocked", "not_in_allowlist", None))
+        blocked = True
         continue
 
     # ── Core signal: registry metadata (fail-closed) ──

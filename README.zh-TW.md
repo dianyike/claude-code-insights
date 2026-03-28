@@ -4,7 +4,7 @@
 
 Claude Code 的 CLAUDE.md、Skills 與 Subagents 最佳實踐指南。
 
-本倉庫主要彙整自 Anthropic 官方文件、社群文章與熱門 GitHub 儲存庫，相關觀點與設計模式皆歸功於原作者。這是我在學習過程中的整理與摘錄，並非**原創研究**。
+本儲存庫主要彙整自 Anthropic 官方文件、社群文章與熱門 GitHub 儲存庫，相關觀點與設計模式皆歸功於原作者。這是我在學習過程中的整理與摘錄，並非**原創研究**。
 
 ## 適合誰
 
@@ -39,7 +39,7 @@ Claude Code 的 CLAUDE.md、Skills 與 Subagents 最佳實踐指南。
 
 ### Skills 範例
 
-以下 Skills 改編自 [mattpocock/skills](https://github.com/mattpocock/skills)（實作設計樹、TDD 垂直切片等概念），並依據本倉庫的最佳實踐指南重新整理：將範本抽出至 `templates/`、將參考資料移至 `reference/`，並補上 Gotchas 區段。
+以下 Skills 改編自 [mattpocock/skills](https://github.com/mattpocock/skills)（實作設計樹、TDD 垂直切片等概念），並依據本儲存庫的最佳實踐指南重新整理：將範本抽出至 `templates/`、將參考資料移至 `reference/`，並補上 Gotchas 區段。
 
 | 範例 | 說明 | 用途 |
 |------|------|------|

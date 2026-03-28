@@ -75,7 +75,7 @@ npm-supply-chain-defense/
 │   ├── npm-pkg-check.sh           # Layer 2: pre-install check (Python inside bash)
 │   └── npm-safe-packages.txt      # Whitelist for packages needing install scripts
 ├── tests/
-│   └── run-tests.py               # 48 regression tests (37 unit + 11 live)
+│   └── run-tests.py               # 53 regression tests (42 unit + 11 live)
 ├── settings-snippet.jsonc          # Hook configuration for settings.json
 ├── README.md                       # This file (English)
 └── README.zh-TW.md                # Traditional Chinese version
@@ -97,6 +97,8 @@ npm-supply-chain-defense/
 
 | Scenario | Output |
 |----------|--------|
+| `npm install -g esbuild` (global install) | `🚫 BLOCKED (global installs are not allowed)` |
+| `NPM_PKG_CHECK_MODE=allowlist-only npm install lodash` | `🚫 BLOCKED (not in allowlist)` |
 | `npm install zzz-fake-pkg` (not on registry) | `⚠ not found on npm registry` |
 | `npm install lodash@4.17.20` (known CVE) | `🚫 BLOCKED (3 known vuln(s): GHSA-...)` |
 | `npm install lodash@beta` (version unresolvable) | `🚫 BLOCKED (version not resolved)` |
@@ -120,6 +122,16 @@ The hook blocks by default when it cannot determine safety. Core signals must su
 | Download count | Supplementary | Warning only | Stats API is non-critical |
 
 This means: if npm's registry is unreachable, the hook blocks. If OSV.dev is down, the hook warns but allows (since the registry check already passed).
+
+### Optional allowlist-only mode
+
+Set `NPM_PKG_CHECK_MODE=allowlist-only` to switch to a stricter workflow:
+
+- Whitelisted packages are still allowed immediately
+- Any package not in `NPM_PKG_CHECK_SAFE_LIST` is blocked
+- Registry, OSV, download-count, and version-resolution network checks are skipped entirely
+
+This mode is useful when you want deterministic, no-network install control for AI agents.
 
 ### Per-PM option parsing
 
@@ -154,10 +166,15 @@ The hook detects dependency scope from CLI flags and records it in the structure
 
 Scope is logged but does not currently change block policy. This data enables future analysis of dev vs prod failure rates.
 
+### Global install policy
+
+`--global` / `-g` installs are blocked before any package checks run. In an AI-agent workflow, global installs are high-impact and usually unnecessary compared with local dependencies or `npx`.
+
 ## Environment Variables
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
+| `NPM_PKG_CHECK_MODE` | `dynamic` | `dynamic` = registry/OSV/download checks, `allowlist-only` = only allow packages in safe list |
 | `NPM_PKG_CHECK_SAFE_LIST` | `~/.claude/scripts/npm-safe-packages.txt` | Override whitelist file path |
 | `NPM_PKG_CHECK_LOG` | `~/.claude/logs/npm-pkg-check.jsonl` | Override structured log file path |
 
@@ -201,6 +218,8 @@ Every check decision is logged as a JSONL entry to `NPM_PKG_CHECK_LOG`:
 | `known_vulnerability` | OSV.dev returned CVE/GHSA matches |
 | `low_downloads_with_scripts` | Low weekly downloads AND has install scripts |
 | `core_signal_unavailable` | Registry or version manifest unreachable |
+| `global_install` | Global install attempt via `--global` / `-g` |
+| `not_in_allowlist` | Package blocked by `allowlist-only` mode |
 | `unknown_option` | CLI flag not in arity table |
 | `parse_error` | TOOL_INPUT JSON could not be parsed |
 
@@ -220,14 +239,14 @@ python3 tests/run-tests.py --live
 
 ### Test design
 
-- **Unit tests** (37): Use whitelisted packages (`esbuild`) to isolate parsing logic from network. Verify exit codes, scope detection, log structure, `reason_code` taxonomy, and `decision` taxonomy.
+- **Unit tests** (42): Use whitelisted packages (`esbuild`) to isolate parsing logic from network. Verify exit codes, scope detection, global-install blocking, allowlist-only mode, log structure, `reason_code` taxonomy, and `decision` taxonomy.
 - **Live tests** (11): Hit real npm registry, OSV.dev, and `npm view`. Verify version resolution, vulnerability detection, and real-world package checks.
 - **Log validation**: Tests verify every JSONL entry has required fields, `reason_code` is from the fixed taxonomy, `decision` is from the fixed taxonomy, and specific `reason_code` values appear for known test cases. Log validation failure causes the test run to fail (not just warn).
 - **Environment isolation**: The test harness overrides `NPM_PKG_CHECK_SAFE_LIST` and `NPM_PKG_CHECK_LOG` via environment variables, so results are independent of the user's home directory.
 
 ```text
-Result: 37 passed, 0 failed, 11 skipped / 48 total
-All 37 executed tests passed. Run with --live for full suite.
+Result: 42 passed, 0 failed, 11 skipped / 53 total
+All 42 executed tests passed. Run with --live for full suite.
 ```
 
 ## Limitations

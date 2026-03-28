@@ -101,7 +101,7 @@ npm-supply-chain-defense/
 │   ├── npm-pkg-check.sh           # 第二層：安裝前檢查（Python 嵌入 bash）
 │   └── npm-safe-packages.txt      # 白名單
 ├── tests/
-│   └── run-tests.py               # 48 個回歸測試（37 unit + 11 live）
+│   └── run-tests.py               # 53 個回歸測試（42 unit + 11 live）
 ├── settings-snippet.jsonc          # Hook 設定片段
 ├── README.md                       # 英文版
 └── README.zh-TW.md                # 本檔案
@@ -123,6 +123,8 @@ npm-supply-chain-defense/
 
 | 場景 | 輸出 |
 |------|------|
+| `npm install -g esbuild`（全域安裝） | `🚫 BLOCKED (global installs are not allowed)` |
+| `NPM_PKG_CHECK_MODE=allowlist-only npm install lodash` | `🚫 BLOCKED (not in allowlist)` |
 | `npm install zzz-fake-pkg`（不存在） | `⚠️ not found on npm registry` |
 | `npm install lodash@4.17.20`（已知 CVE） | `🚫 BLOCKED (3 known vuln(s): GHSA-...)` |
 | `npm install lodash@beta`（版本無法解析） | `🚫 BLOCKED (version not resolved)` |
@@ -144,6 +146,16 @@ npm-supply-chain-defense/
 | Install scripts 檢查 | 核心 | **阻擋** |
 | OSV 漏洞查詢 | 補充 | 僅警告 |
 | 下載量 | 補充 | 僅警告 |
+
+### Allowlist-only 模式
+
+設定 `NPM_PKG_CHECK_MODE=allowlist-only` 可切換到更嚴格的工作流：
+
+- 白名單中的套件仍會立即放行
+- 不在 `NPM_PKG_CHECK_SAFE_LIST` 的套件直接阻擋
+- 完全跳過 registry、OSV、下載量與版本解析的網路查詢
+
+這個模式適合高控管環境，或是想讓 AI agent 只安裝預先核准套件的情境。
 
 ### Per-PM option 解析
 
@@ -173,10 +185,15 @@ Hook 從 CLI flags 偵測依賴範圍並記錄到結構化 log：
 
 範圍目前只記錄，不改變阻擋策略。此資料可供分析 dev vs prod 的失敗比例。
 
+### 全域安裝策略
+
+偵測到 `--global` / `-g` 時，Hook 會在任何套件檢查前直接阻擋。對 AI agent 而言，全域安裝副作用大、通常也不是必要操作。
+
 ### 環境變數
 
 | 變數 | 預設值 | 用途 |
 |------|--------|------|
+| `NPM_PKG_CHECK_MODE` | `dynamic` | `dynamic` = 動態查 registry / OSV / 下載量；`allowlist-only` = 只允許白名單 |
 | `NPM_PKG_CHECK_SAFE_LIST` | `~/.claude/scripts/npm-safe-packages.txt` | 覆蓋白名單路徑 |
 | `NPM_PKG_CHECK_LOG` | `~/.claude/logs/npm-pkg-check.jsonl` | 覆蓋結構化 log 路徑 |
 
@@ -198,7 +215,7 @@ Hook 從 CLI flags 偵測依賴範圍並記錄到結構化 log：
 }
 ```
 
-`reason_code` 是固定枚舉（`clean`、`whitelisted`、`package_not_found`、`version_not_resolved`、`known_vulnerability`、`low_downloads_with_scripts`、`core_signal_unavailable`、`unknown_option`、`parse_error`、`has_risks`），可直接 `GROUP BY` 做統計。`reason_detail` 是可選的自由文字。
+`reason_code` 是固定枚舉（`clean`、`whitelisted`、`package_not_found`、`version_not_resolved`、`known_vulnerability`、`low_downloads_with_scripts`、`core_signal_unavailable`、`global_install`、`not_in_allowlist`、`unknown_option`、`parse_error`、`has_risks`），可直接 `GROUP BY` 做統計。`reason_detail` 是可選的自由文字。
 
 ## 執行測試
 
@@ -212,14 +229,14 @@ python3 tests/run-tests.py --live
 
 ### 測試設計
 
-- **Unit 測試**（37 個）：使用白名單套件（`esbuild`）隔離解析邏輯與網路。驗證 exit code、scope 偵測、log 結構、`reason_code` taxonomy、`decision` taxonomy。
+- **Unit 測試**（42 個）：使用白名單套件（`esbuild`）隔離解析邏輯與網路。驗證 exit code、scope 偵測、global install 阻擋、allowlist-only 模式、log 結構、`reason_code` taxonomy、`decision` taxonomy。
 - **Live 測試**（11 個）：連接真實 npm registry、OSV.dev、`npm view`。驗證版本解析、漏洞偵測、實際套件檢查。
 - **Log 驗證**：測試驗證每筆 JSONL 都有必要欄位、`reason_code` 來自固定 taxonomy、`decision` 來自固定 taxonomy、特定 `reason_code` 在已知案例中出現。Log 驗證失敗會導致測試失敗（不只是警告）。
 - **環境隔離**：測試透過 `NPM_PKG_CHECK_SAFE_LIST` 和 `NPM_PKG_CHECK_LOG` 環境變數覆蓋路徑，結果不受使用者家目錄影響。
 
 ```text
-Result: 37 passed, 0 failed, 11 skipped / 48 total
-All 37 executed tests passed. Run with --live for full suite.
+Result: 42 passed, 0 failed, 11 skipped / 53 total
+All 42 executed tests passed. Run with --live for full suite.
 ```
 
 ## 限制
