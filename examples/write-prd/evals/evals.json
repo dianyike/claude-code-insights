@@ -1,0 +1,55 @@
+{
+  "skill_name": "write-prd",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "幫我根據這份決策紀錄寫成 PRD：evals/files/login-redesign-decision.md",
+      "expected_output": "A structured PRD that references the decision record, extracts user stories from the decisions, and identifies gaps to ask about. Should NOT invent requirements not derivable from the decision record.",
+      "files": ["evals/files/login-redesign-decision.md"],
+      "expectations": [
+        "Problem statement describes user pain (mobile login drop-off), not the solution",
+        "References the decision record in the References section",
+        "User stories have P0/P1/P2 priority tiers",
+        "Non-Goals section is non-empty and specific",
+        "Open Questions from the decision record are carried forward or resolved",
+        "Does NOT fabricate requirements that aren't in the decision record or inferrable from it",
+        "Does NOT include implementation details (specific code, cookie types, SDK pinning, function names, file paths)",
+        "Every functional requirement traces back to a user story or a decision in the decision record"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我想做一個讓 PM 能快速整理使用者訪談重點的功能，幫我寫 PRD",
+      "expected_output": "Should enter interview mode first, asking clarifying questions ONE at a time. Must ask about target user, definition of done, and non-goals before drafting. Should NOT produce a PRD immediately from this vague input.",
+      "files": [],
+      "expectations": [
+        "Does NOT draft a PRD immediately — asks clarifying questions first",
+        "Each response contains exactly ONE question — does not batch multiple questions in a single response",
+        "Asks about target user and their pain point",
+        "Asks about what 'done' looks like (success state)",
+        "Asks about non-goals / what is explicitly out of scope"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "（多輪 eval）使用者回答了目標使用者和痛點，但對 non-goals 只說「還沒想好」。Claude 應該把這些 gaps 放進 Open Questions，而不是自己腦補。",
+      "expected_output": "PRD draft should contain an Open Questions section with the unresolved non-goals listed, not silently filled in with assumptions.",
+      "files": [],
+      "expectations": [
+        "PRD draft contains an Open Questions section",
+        "Unresolved items from the interview (e.g. non-goals) appear in Open Questions, not silently assumed",
+        "Does NOT fabricate non-goals the user didn't confirm"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "這份 PRD 沒問題了，請幫我存檔",
+      "expected_output": "Should ask the user to confirm the filename before writing. Should write to docs/prds/ directory. Should NOT write without confirming the filename first.",
+      "files": [],
+      "expectations": [
+        "Asks the user to confirm the filename before writing, and does NOT silently pick a filename and write without confirmation",
+        "Targets docs/prds/ as the output directory"
+      ]
+    }
+  ]
+}

@@ -44,14 +44,31 @@ The following Skills are adapted from [mattpocock/skills](https://github.com/mat
 | Example | Description | Use Case |
 |---------|-------------|----------|
 | [examples/grill-me](examples/grill-me) | Design Interrogation — traverses every branch of a decision tree, resolving design decision dependencies one by one | Pre-coding design stress test |
+| [examples/write-prd](examples/write-prd) | Write PRD — turns design decisions or rough ideas into a structured requirements document, bridging grill-me and prd-to-plan | Requirements authoring and structuring |
 | [examples/tdd](examples/tdd) | TDD Workflow — red-green-refactor vertical slices with test examples, mock guidelines, and deep module design reference | Feature development and bug fixes |
 | [examples/prd-to-plan](examples/prd-to-plan) | PRD to Implementation Plan — breaks requirements into tracer bullet vertical slices, outputs to `./plans/` | Requirements decomposition and phase planning |
 | [examples/write-a-skill](examples/write-a-skill) | Skill Builder Meta-Skill — content type decisions, invocation control, security configuration, Gotchas iteration loop. Includes eval workflow reference | Creating new Skills |
 | [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill Eval Toolkit — eval-driven testing, quantitative benchmarking, blind A/B comparison, description trigger optimization with automated iteration loop | Validating and optimizing existing Skills |
 
-**Solo Development Workflow**: `/grill-me` (interrogate the design) → `/prd-to-plan` (break into phases) → `/tdd` (implement one by one)
+**Solo Development Workflow**: `/grill-me` (interrogate the design) → `/write-prd` (write the PRD) → `/prd-to-plan` (break into phases) → `/tdd` (implement one by one)
 
 **Skill Development Workflow**: `/write-a-skill` (author the skill) → `/skill-eval-toolkit` (evaluate and optimize)
+
+#### write-prd — PRD Authoring Skill
+
+Fills the gap between `/grill-me` and `/prd-to-plan` — turns design decisions or rough ideas into a structured PRD:
+
+- One-question-per-turn structured interview (target user → success state → non-goals)
+- Enforces P0/P1/P2 priority tiers, References citing decision records, `docs/prds/` output convention
+- Stays at product / system-contract level — no implementation details leak (httpOnly cookies, SDK pinning, etc.)
+- Delegated/Eval Mode — distinguishes draft artifacts from canonical PRD files
+- Includes 4 functional eval cases + 12 trigger tests (validated through 2 iterations with skill-eval-toolkit, 90% pass rate)
+
+```
+You: "Write a PRD based on docs/decisions/login-redesign.md"
+Claude: (loads write-prd, reads decision record, identifies gaps,
+         produces PRD draft with user stories + traceability, asks to confirm)
+```
 
 #### write-a-skill — Skill Authoring Guide
 

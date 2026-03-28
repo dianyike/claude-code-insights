@@ -1,0 +1,72 @@
+{
+  "skill_name": "write-prd",
+  "type": "trigger",
+  "evals": [
+    {
+      "id": "t1",
+      "prompt": "幫我把這些需求整理成 PRD",
+      "should_trigger": true
+    },
+    {
+      "id": "t2",
+      "prompt": "把這份設計討論轉成 feature spec",
+      "should_trigger": true
+    },
+    {
+      "id": "t3",
+      "prompt": "根據 docs/decisions/ 產出產品需求文件",
+      "should_trigger": true
+    },
+    {
+      "id": "t4",
+      "prompt": "I need a PRD for the new notification system",
+      "should_trigger": true
+    },
+    {
+      "id": "t5",
+      "prompt": "help me document the requirements for this feature",
+      "should_trigger": true
+    },
+    {
+      "id": "t6",
+      "prompt": "幫我把 PRD 拆成實作階段",
+      "should_trigger": false,
+      "expected_skill": "prd-to-plan"
+    },
+    {
+      "id": "t7",
+      "prompt": "幫我寫測試",
+      "should_trigger": false,
+      "expected_skill": "tdd"
+    },
+    {
+      "id": "t8",
+      "prompt": "幫我 review 這份 PRD 有沒有問題",
+      "should_trigger": false,
+      "reason": "Reviewing a PRD is not the same as writing one"
+    },
+    {
+      "id": "t9",
+      "prompt": "質詢一下我這個設計",
+      "should_trigger": false,
+      "expected_skill": "grill-me"
+    },
+    {
+      "id": "t10",
+      "prompt": "幫我建一個新的 skill",
+      "should_trigger": false,
+      "expected_skill": "write-a-skill"
+    },
+    {
+      "id": "t11",
+      "prompt": "commit these changes",
+      "should_trigger": false
+    },
+    {
+      "id": "t12",
+      "prompt": "幫我寫一份 API 文件",
+      "should_trigger": false,
+      "reason": "API docs are not PRDs — different structure and purpose"
+    }
+  ]
+}
