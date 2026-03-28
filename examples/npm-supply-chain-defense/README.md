@@ -75,7 +75,7 @@ npm-supply-chain-defense/
 │   ├── npm-pkg-check.sh           # Layer 2: pre-install check (Python inside bash)
 │   └── npm-safe-packages.txt      # Whitelist for packages needing install scripts
 ├── tests/
-│   └── run-tests.py               # 53 regression tests (42 unit + 11 live)
+│   └── run-tests.py               # 58 regression tests (46 unit + 12 live)
 ├── settings-snippet.jsonc          # Hook configuration for settings.json
 ├── README.md                       # This file (English)
 └── README.zh-TW.md                # Traditional Chinese version
@@ -89,7 +89,7 @@ npm-supply-chain-defense/
 |----------|--------|
 | `git status` (non-npm command) | none |
 | `npm install` (bare, from lockfile) | none |
-| `npm install esbuild` (whitelisted) | `✓ esbuild (whitelisted)` |
+| `npm install esbuild` (whitelisted; best-effort latest/CVE check) | `✓ esbuild (whitelisted)` |
 | `npm install lodash` (popular, clean) | `✓ lodash — 125M/week, 3 maintainers` |
 | `npm install express@latest` (dist-tag resolved) | `✓ express@5.2.1 — 91M/week, ...` |
 
@@ -99,8 +99,11 @@ npm-supply-chain-defense/
 |----------|--------|
 | `npm install -g esbuild` (global install) | `🚫 BLOCKED (global installs are not allowed)` |
 | `NPM_PKG_CHECK_MODE=allowlist-only npm install lodash` | `🚫 BLOCKED (not in allowlist)` |
+| `npm install git+https://...` (non-registry specifier) | `🚫 BLOCKED (only registry packages are allowed)` |
+| `npm install ./pkg.tgz` (tarball / file: / GitHub shorthand) | `🚫 BLOCKED (only registry packages are allowed)` |
 | `npm install zzz-fake-pkg` (not on registry) | `⚠ not found on npm registry` |
 | `npm install lodash@4.17.20` (known CVE) | `🚫 BLOCKED (3 known vuln(s): GHSA-...)` |
+| `npm install <whitelisted-pkg>@<vuln-version>` | `🚫 BLOCKED (...known vuln(s)...) [whitelisted]` |
 | `npm install lodash@beta` (version unresolvable) | `🚫 BLOCKED (version not resolved)` |
 | `npm install --mystery-flag lodash` (unknown CLI flag) | `🚫 BLOCKED (unrecognized option)` |
 | Low downloads + install scripts | `🚫 BLOCKED (low downloads, has install scripts)` |
@@ -127,11 +130,11 @@ This means: if npm's registry is unreachable, the hook blocks. If OSV.dev is dow
 
 Set `NPM_PKG_CHECK_MODE=allowlist-only` to switch to a stricter workflow:
 
-- Whitelisted packages are still allowed immediately
+- Packages in `NPM_PKG_CHECK_SAFE_LIST` bypass reputation/download/install-script heuristics. Explicit version requests still get fail-closed version/CVE checks; bare installs get best-effort checks when metadata is reachable
 - Any package not in `NPM_PKG_CHECK_SAFE_LIST` is blocked
-- Registry, OSV, download-count, and version-resolution network checks are skipped entirely
+- Non-whitelisted packages skip registry, OSV, download-count, and version-resolution network checks entirely
 
-This mode is useful when you want deterministic, no-network install control for AI agents.
+This mode is useful when you want AI agents limited to a pre-approved package set, while still rejecting obviously vulnerable pinned versions of those approved packages.
 
 ### Per-PM option parsing
 
@@ -211,7 +214,7 @@ Every check decision is logged as a JSONL entry to `NPM_PKG_CHECK_LOG`:
 | Value | Meaning |
 |-------|---------|
 | `clean` | No risks detected |
-| `whitelisted` | Package in safe list, skipped checks |
+| `whitelisted` | Package in safe list, allowed directly or after best-effort/version-aware checks |
 | `has_risks` | Non-blocking risks present |
 | `package_not_found` | Package does not exist on registry |
 | `version_not_resolved` | Version spec could not be resolved to exact semver |
@@ -220,6 +223,7 @@ Every check decision is logged as a JSONL entry to `NPM_PKG_CHECK_LOG`:
 | `core_signal_unavailable` | Registry or version manifest unreachable |
 | `global_install` | Global install attempt via `--global` / `-g` |
 | `not_in_allowlist` | Package blocked by `allowlist-only` mode |
+| `non_registry_specifier` | Git URL, tarball, file:, GitHub shorthand, or npm: alias |
 | `unknown_option` | CLI flag not in arity table |
 | `parse_error` | TOOL_INPUT JSON could not be parsed |
 
@@ -239,14 +243,14 @@ python3 tests/run-tests.py --live
 
 ### Test design
 
-- **Unit tests** (42): Use whitelisted packages (`esbuild`) to isolate parsing logic from network. Verify exit codes, scope detection, global-install blocking, allowlist-only mode, log structure, `reason_code` taxonomy, and `decision` taxonomy.
-- **Live tests** (11): Hit real npm registry, OSV.dev, and `npm view`. Verify version resolution, vulnerability detection, and real-world package checks.
+- **Unit tests** (46): Use whitelisted packages (`esbuild`) to isolate parsing logic from network. Verify exit codes, scope detection, global-install blocking, allowlist-only mode, non-registry specifier blocking, log structure, `reason_code` taxonomy, and `decision` taxonomy.
+- **Live tests** (12): Hit real npm registry, OSV.dev, and `npm view`. Verify version resolution, vulnerability detection, whitelisted vulnerable-version blocking, and real-world package checks.
 - **Log validation**: Tests verify every JSONL entry has required fields, `reason_code` is from the fixed taxonomy, `decision` is from the fixed taxonomy, and specific `reason_code` values appear for known test cases. Log validation failure causes the test run to fail (not just warn).
 - **Environment isolation**: The test harness overrides `NPM_PKG_CHECK_SAFE_LIST` and `NPM_PKG_CHECK_LOG` via environment variables, so results are independent of the user's home directory.
 
 ```text
-Result: 42 passed, 0 failed, 11 skipped / 53 total
-All 42 executed tests passed. Run with --live for full suite.
+Result: 46 passed, 0 failed, 12 skipped / 58 total
+All 46 executed tests passed. Run with --live for full suite.
 ```
 
 ## Limitations

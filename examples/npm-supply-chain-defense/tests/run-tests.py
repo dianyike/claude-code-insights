@@ -18,8 +18,11 @@ SAFE_LIST = str(_EXAMPLE_DIR / "scripts" / "npm-safe-packages.txt")
 LIVE = "--live" in sys.argv
 
 import tempfile
-_LOG_TMPDIR = tempfile.mkdtemp()
-LOG_FILE = os.path.join(_LOG_TMPDIR, "npm-pkg-check.jsonl")
+_TMPDIR = tempfile.mkdtemp()
+LOG_FILE = os.path.join(_TMPDIR, "npm-pkg-check.jsonl")
+ALT_SAFE_LIST = os.path.join(_TMPDIR, "alt-safe-packages.txt")
+with open(ALT_SAFE_LIST, "w") as f:
+    f.write("lodash\n")
 
 # ── Test cases ──────────────────────────────────────────────────────
 # (description, TOOL_INPUT_value, expected_exit, category, extra_env)
@@ -96,13 +99,21 @@ TESTS = [
     ("npm isntall esbuild",
      '{"command": "npm isntall esbuild"}', 0, "unit", {}),
 
-    # ── Unit: Non-registry specifiers → skip (no packages to check) ──
-    ("npm alias → skip",
-     '{"command": "npm install myalias@npm:react@18"}', 0, "unit", {}),
-    ("SCP git URL → skip",
-     '{"command": "npm install git@github.com:user/repo.git"}', 0, "unit", {}),
-    ("github shorthand → skip",
-     '{"command": "npm install user/repo"}', 0, "unit", {}),
+    # ── Unit: Non-registry specifiers → BLOCK ──
+    ("npm alias → BLOCK",
+     '{"command": "npm install myalias@npm:react@18"}', 2, "unit", {}),
+    ("SCP git URL → BLOCK",
+     '{"command": "npm install git@github.com:user/repo.git"}', 2, "unit", {}),
+    ("github shorthand → BLOCK",
+     '{"command": "npm install user/repo"}', 2, "unit", {}),
+    ("git+ URL → BLOCK",
+     '{"command": "npm install git+https://github.com/user/repo.git"}', 2, "unit", {}),
+    ("tarball URL → BLOCK",
+     '{"command": "npm install https://example.com/pkg.tgz"}', 2, "unit", {}),
+    ("local tarball → BLOCK",
+     '{"command": "npm install ./my-pkg-1.0.0.tgz"}', 2, "unit", {}),
+    ("file: specifier → BLOCK",
+     '{"command": "npm install file:../local-pkg"}', 2, "unit", {}),
 
     # ── Unit: Whitelist ──
     ("whitelisted package → pass",
@@ -133,6 +144,8 @@ TESTS = [
     # ── Live: Vulnerability detection ──
     ("lodash@4.17.20 → BLOCK (known CVE)",
      '{"command": "npm install lodash@4.17.20"}', 2, "live", {}),
+    ("whitelisted lodash@4.17.20 → still BLOCK",
+     '{"command": "npm install lodash@4.17.20"}', 2, "live", {"NPM_PKG_CHECK_SAFE_LIST": ALT_SAFE_LIST}),
     ("express latest → pass (clean)",
      '{"command": "npm install express"}', 0, "live", {}),
 
@@ -232,6 +245,7 @@ def main():
         "package_not_found", "version_not_resolved", "known_vulnerability",
         "low_downloads_with_scripts", "core_signal_unavailable",
         "unknown_option", "parse_error", "global_install", "not_in_allowlist",
+        "non_registry_specifier",
     }
     VALID_DECISIONS = {"allow", "allow_with_warning", "blocked"}
 
@@ -297,6 +311,10 @@ def main():
         if "not_in_allowlist" not in reason_codes_found:
             print("  ✗ Expected reason_code='not_in_allowlist' from allowlist-only test — not found")
             log_ok = False
+        # non_registry_specifier should appear (from git/tarball/alias tests)
+        if "non_registry_specifier" not in reason_codes_found:
+            print("  ✗ Expected reason_code='non_registry_specifier' from non-registry specifier tests — not found")
+            log_ok = False
 
         if log_ok:
             print("  ✓ All log entries have valid structure, reason_codes, and decisions")
@@ -310,7 +328,7 @@ def main():
 
     # ── Cleanup ──
     import shutil
-    shutil.rmtree(_LOG_TMPDIR, ignore_errors=True)
+    shutil.rmtree(_TMPDIR, ignore_errors=True)
 
     print(f"\n{'='*60}")
     total_run = passed + failed

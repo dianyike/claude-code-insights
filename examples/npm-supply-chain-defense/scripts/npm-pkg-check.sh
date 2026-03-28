@@ -288,15 +288,15 @@ def extract_packages(words):
                     skip_next = True
                 continue
 
-            skip_prefixes = ("git:", "git+", "git@", "http:", "https:", "file:", "./", "../", "/", "npm:")
-            if any(word.startswith(p) for p in skip_prefixes):
-                continue
+            non_registry_prefixes = ("git:", "git+", "git@", "http:", "https:", "file:", "./", "../", "/")
+            if any(word.startswith(p) for p in non_registry_prefixes):
+                return f"__BLOCK__:non-registry specifier '{word}' — only registry packages are allowed", None, None, None
             if word.endswith(".tgz") or word.endswith(".tar.gz"):
-                continue
+                return f"__BLOCK__:tarball specifier '{word}' — only registry packages are allowed", None, None, None
             if "npm:" in word:
-                continue
+                return f"__BLOCK__:npm: alias '{word}' — only direct registry packages are allowed", None, None, None
             if "/" in word and not word.startswith("@"):
-                continue
+                return f"__BLOCK__:GitHub shorthand '{word}' — only registry packages are allowed", None, None, None
 
             if word.startswith("@") and "/" in word:
                 parts = word.split("/", 1)
@@ -371,9 +371,10 @@ def check_vulns(pkg, version):
     return len(vulns), ids
 
 def get_downloads(pkg):
+    """Returns download count, or None if the API is unreachable."""
     data = http_get_json(f"https://api.npmjs.org/downloads/point/last-week/{pkg}")
     if not data:
-        return 0
+        return None
     return data.get("downloads", 0)
 
 # ── Structured logging ──────────────────────────────────────────────
@@ -425,8 +426,13 @@ result = extract_packages(words)
 # extract_packages returns a tuple of 4; string on parse failure
 if isinstance(result[0], str) and result[0].startswith("__BLOCK__:"):
     reason = result[0].split(":", 1)[1]
-    print(f"🚫 BLOCKED — command parse error: {reason}")
-    write_log(make_log_entry(None, None, None, None, None, "blocked", "unknown_option", reason))
+    # Distinguish non-registry specifiers from unknown CLI options
+    if "only registry packages" in reason or "only direct registry" in reason:
+        reason_code = "non_registry_specifier"
+    else:
+        reason_code = "unknown_option"
+    print(f"🚫 BLOCKED — {reason}")
+    write_log(make_log_entry(None, None, None, None, None, "blocked", reason_code, reason))
     sys.exit(2)
 
 packages, detected_pm, dep_scope, is_global = result
@@ -448,8 +454,42 @@ if not packages:
 
 for pkg, spec in packages:
     if pkg in safe_list:
+        # Safe-list packages bypass reputation/download/script heuristics.
+        # If a version is explicitly requested, we still fail-closed on
+        # version/CVE checks. For bare installs, we do best-effort checks
+        # when metadata is available, but preserve offline allowlist behavior.
+        abbrev_wl = get_abbreviated_metadata(pkg)
+        if abbrev_wl is None:
+            if spec:
+                print(f"🚫 {pkg} — BLOCKED (registry unreachable — core signal unavailable) [whitelisted]")
+                write_log(make_log_entry(detected_pm, pkg, spec, None, dep_scope, "blocked", "core_signal_unavailable", "registry_metadata_whitelisted"))
+                blocked = True
+                continue
+            print(f"✓ {pkg} (whitelisted)")
+            write_log(make_log_entry(detected_pm, pkg, spec, None, dep_scope, "allow", "whitelisted", "metadata_unavailable"))
+            continue
+        if "error" in abbrev_wl:
+            print(f"🚫 {pkg} — BLOCKED (not found on npm registry) [whitelisted]")
+            write_log(make_log_entry(detected_pm, pkg, spec, None, dep_scope, "blocked", "package_not_found", "whitelisted"))
+            blocked = True
+            continue
+
+        wl_ver, wl_ok, wl_err = resolve_version(pkg, spec, abbrev_wl)
+        if not wl_ok or not wl_ver:
+            reason = wl_err or "unknown"
+            print(f"🚫 {pkg}@{spec or 'latest'} — BLOCKED (version not resolved: {reason}) [whitelisted]")
+            write_log(make_log_entry(detected_pm, pkg, spec, None, dep_scope, "blocked", "version_not_resolved", f"whitelisted: {reason}"))
+            blocked = True
+            continue
+
+        wl_vuln_count, wl_vuln_ids = check_vulns(pkg, wl_ver)
+        if wl_vuln_count > 0:
+            print(f"🚫 {pkg}@{wl_ver} — BLOCKED ({wl_vuln_count} known vuln(s): {', '.join(wl_vuln_ids)}) [whitelisted]")
+            write_log(make_log_entry(detected_pm, pkg, spec, wl_ver, dep_scope, "blocked", "known_vulnerability", ", ".join(wl_vuln_ids)))
+            blocked = True
+            continue
         print(f"✓ {pkg} (whitelisted)")
-        write_log(make_log_entry(detected_pm, pkg, spec, None, dep_scope, "allow", "whitelisted", None))
+        write_log(make_log_entry(detected_pm, pkg, spec, wl_ver, dep_scope, "allow", "whitelisted", None))
         continue
 
     if CHECK_MODE == "allowlist-only":
@@ -507,10 +547,13 @@ for pkg, spec in packages:
     maintainers = len(abbrev.get("maintainers", []))
 
     # ── Risk assessment ──
+    # downloads is None when the API is unreachable (fail-open per design)
+    downloads_known = downloads is not None
+    downloads_display = downloads if downloads_known else "N/A"
     risks = []
     if has_vuln:
         risks.append(f"{vuln_count} known vuln(s): {', '.join(vuln_ids)}")
-    if downloads < MIN_WEEKLY_DOWNLOADS:
+    if downloads_known and downloads < MIN_WEEKLY_DOWNLOADS:
         risks.append(f"low downloads: {downloads}/week")
     if has_scripts:
         risks.append("has install scripts")
@@ -520,7 +563,7 @@ for pkg, spec in packages:
     # ── Decision + Output ──
     version_display = f"@{check_version}" if spec else ""
     if not risks:
-        print(f"✓ {pkg}{version_display} — {downloads}/week, {maintainers} maintainers")
+        print(f"✓ {pkg}{version_display} — {downloads_display}/week, {maintainers} maintainers")
         write_log(make_log_entry(detected_pm, pkg, spec, check_version, dep_scope, "allow", "clean", None))
     else:
         risk_str = ", ".join(risks)
@@ -528,12 +571,12 @@ for pkg, spec in packages:
             print(f"🚫 {pkg}@{check_version} — BLOCKED ({risk_str})")
             write_log(make_log_entry(detected_pm, pkg, spec, check_version, dep_scope, "blocked", "known_vulnerability", ", ".join(vuln_ids)))
             blocked = True
-        elif downloads < MIN_WEEKLY_DOWNLOADS and has_scripts:
+        elif downloads_known and downloads < MIN_WEEKLY_DOWNLOADS and has_scripts:
             print(f"🚫 {pkg} — BLOCKED ({risk_str})")
             write_log(make_log_entry(detected_pm, pkg, spec, check_version, dep_scope, "blocked", "low_downloads_with_scripts", None))
             blocked = True
         else:
-            print(f"⚠️ {pkg}{version_display} — ({risk_str}) — {downloads}/week, {maintainers} maintainers")
+            print(f"⚠️ {pkg}{version_display} — ({risk_str}) — {downloads_display}/week, {maintainers} maintainers")
             write_log(make_log_entry(detected_pm, pkg, spec, check_version, dep_scope, "allow_with_warning", "has_risks", risk_str))
 
 if blocked:

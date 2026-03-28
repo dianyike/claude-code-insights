@@ -101,7 +101,7 @@ npm-supply-chain-defense/
 │   ├── npm-pkg-check.sh           # 第二層：安裝前檢查（Python 嵌入 bash）
 │   └── npm-safe-packages.txt      # 白名單
 ├── tests/
-│   └── run-tests.py               # 53 個回歸測試（42 unit + 11 live）
+│   └── run-tests.py               # 58 個回歸測試（46 unit + 12 live）
 ├── settings-snippet.jsonc          # Hook 設定片段
 ├── README.md                       # 英文版
 └── README.zh-TW.md                # 本檔案
@@ -115,7 +115,7 @@ npm-supply-chain-defense/
 |------|------|
 | `git status`（非 npm 指令） | 無 |
 | `npm install`（bare，從 lockfile） | 無 |
-| `npm install esbuild`（白名單） | `✓ esbuild (whitelisted)` |
+| `npm install esbuild`（白名單；對 latest 做 best-effort/CVE 檢查） | `✓ esbuild (whitelisted)` |
 | `npm install lodash`（知名且安全） | `✓ lodash — 125M/week, 3 maintainers` |
 | `npm install express@latest`（dist-tag 解析） | `✓ express@5.2.1 — 91M/week, ...` |
 
@@ -125,8 +125,11 @@ npm-supply-chain-defense/
 |------|------|
 | `npm install -g esbuild`（全域安裝） | `🚫 BLOCKED (global installs are not allowed)` |
 | `NPM_PKG_CHECK_MODE=allowlist-only npm install lodash` | `🚫 BLOCKED (not in allowlist)` |
+| `npm install git+https://...`（非 registry specifier） | `🚫 BLOCKED (only registry packages are allowed)` |
+| `npm install ./pkg.tgz`（tarball / file: / GitHub shorthand） | `🚫 BLOCKED (only registry packages are allowed)` |
 | `npm install zzz-fake-pkg`（不存在） | `⚠️ not found on npm registry` |
 | `npm install lodash@4.17.20`（已知 CVE） | `🚫 BLOCKED (3 known vuln(s): GHSA-...)` |
+| `npm install <whitelisted-pkg>@<vuln-version>` | `🚫 BLOCKED (...known vuln(s)...) [whitelisted]` |
 | `npm install lodash@beta`（版本無法解析） | `🚫 BLOCKED (version not resolved)` |
 | `npm install --mystery-flag lodash`（不明 CLI flag） | `🚫 BLOCKED (unrecognized option)` |
 | 低下載量 + 有 install scripts | `🚫 BLOCKED (low downloads, has install scripts)` |
@@ -151,11 +154,11 @@ npm-supply-chain-defense/
 
 設定 `NPM_PKG_CHECK_MODE=allowlist-only` 可切換到更嚴格的工作流：
 
-- 白名單中的套件仍會立即放行
+- `NPM_PKG_CHECK_SAFE_LIST` 中的套件會跳過 reputation／下載量／install-script 啟發式。明確指定版本時，仍會 fail-closed 地做版本/CVE 檢查；未指定版本時，在 metadata 可取得時做 best-effort 檢查
 - 不在 `NPM_PKG_CHECK_SAFE_LIST` 的套件直接阻擋
-- 完全跳過 registry、OSV、下載量與版本解析的網路查詢
+- 非白名單套件會完全跳過 registry、OSV、下載量與版本解析的網路查詢
 
-這個模式適合高控管環境，或是想讓 AI agent 只安裝預先核准套件的情境。
+這個模式適合高控管環境，想讓 AI agent 只安裝預先核准套件，同時仍擋掉這些核准套件中明確釘選到的已知漏洞版本。
 
 ### Per-PM option 解析
 
@@ -215,7 +218,7 @@ Hook 從 CLI flags 偵測依賴範圍並記錄到結構化 log：
 }
 ```
 
-`reason_code` 是固定枚舉（`clean`、`whitelisted`、`package_not_found`、`version_not_resolved`、`known_vulnerability`、`low_downloads_with_scripts`、`core_signal_unavailable`、`global_install`、`not_in_allowlist`、`unknown_option`、`parse_error`、`has_risks`），可直接 `GROUP BY` 做統計。`reason_detail` 是可選的自由文字。
+`reason_code` 是固定枚舉（`clean`、`whitelisted`、`package_not_found`、`version_not_resolved`、`known_vulnerability`、`low_downloads_with_scripts`、`core_signal_unavailable`、`global_install`、`not_in_allowlist`、`non_registry_specifier`、`unknown_option`、`parse_error`、`has_risks`），可直接 `GROUP BY` 做統計。`reason_detail` 是可選的自由文字。
 
 ## 執行測試
 
@@ -229,14 +232,14 @@ python3 tests/run-tests.py --live
 
 ### 測試設計
 
-- **Unit 測試**（42 個）：使用白名單套件（`esbuild`）隔離解析邏輯與網路。驗證 exit code、scope 偵測、global install 阻擋、allowlist-only 模式、log 結構、`reason_code` taxonomy、`decision` taxonomy。
-- **Live 測試**（11 個）：連接真實 npm registry、OSV.dev、`npm view`。驗證版本解析、漏洞偵測、實際套件檢查。
+- **Unit 測試**（46 個）：使用白名單套件（`esbuild`）隔離解析邏輯與網路。驗證 exit code、scope 偵測、global install 阻擋、allowlist-only 模式、非 registry specifier 阻擋、log 結構、`reason_code` taxonomy、`decision` taxonomy。
+- **Live 測試**（12 個）：連接真實 npm registry、OSV.dev、`npm view`。驗證版本解析、漏洞偵測、白名單漏洞版本阻擋、實際套件檢查。
 - **Log 驗證**：測試驗證每筆 JSONL 都有必要欄位、`reason_code` 來自固定 taxonomy、`decision` 來自固定 taxonomy、特定 `reason_code` 在已知案例中出現。Log 驗證失敗會導致測試失敗（不只是警告）。
 - **環境隔離**：測試透過 `NPM_PKG_CHECK_SAFE_LIST` 和 `NPM_PKG_CHECK_LOG` 環境變數覆蓋路徑，結果不受使用者家目錄影響。
 
 ```text
-Result: 42 passed, 0 failed, 11 skipped / 53 total
-All 42 executed tests passed. Run with --live for full suite.
+Result: 46 passed, 0 failed, 12 skipped / 58 total
+All 46 executed tests passed. Run with --live for full suite.
 ```
 
 ## 限制
