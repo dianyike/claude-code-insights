@@ -1,6 +1,8 @@
 # npm packages approved for install scripts (one per line)
-# These will skip the pre-install safety check.
-# Add packages here after manual review.
+# These bypass reputation/download/install-script heuristics.
+# Explicit version requests still get vulnerability checks; bare installs
+# also get best-effort checks when metadata is available.
+# Add packages here only after manual review.
 esbuild
 sharp
 prisma
