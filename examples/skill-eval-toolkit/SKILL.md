@@ -188,6 +188,74 @@ Keep going until the user is happy, feedback is all empty, or you're not making 
 
 ---
 
+## Autopilot Body Optimization
+
+Use this mode when the skill is measurable enough that you want the agent to keep mutating the `SKILL.md` body on its own between eval rounds. This extends the normal eval loop — it does **not** replace your existing evals, grader, benchmark, or viewer.
+
+Best fit:
+- The skill has 3-6 discriminating assertions and stable test prompts
+- Failures cluster into repeatable instruction problems
+- You want small keep/revert prompt mutations, not a full rewrite
+
+Avoid autopilot when:
+- The skill is mostly subjective and depends on human taste
+- Your evals are weak, flaky, or easy to game
+- You still haven't established a baseline manually
+
+### The loop
+
+1. Run the normal iteration and produce `benchmark.json` (compare the candidate under `with_skill` against `old_skill` or `without_skill`)
+2. Collect `feedback.json` if the user reviewed outputs
+3. Advance the autopilot loop:
+
+All `python -m scripts.*` commands assume the working directory is the skill-eval-toolkit root (i.e. the directory containing the `scripts/` package).
+
+```bash
+python -m scripts.body_autopilot \
+  --workspace <skill-workspace> \
+  --best-skill-path <accepted-best-skill-dir> \
+  --candidate-skill-path <evaluated-candidate-skill-dir> \
+  --benchmark <skill-workspace>/iteration-N/benchmark.json \
+  --feedback <skill-workspace>/iteration-N/feedback.json \
+  --candidate-config with_skill \
+  --baseline-config old_skill \
+  --model <model-id>
+```
+
+What it does:
+- Reads benchmark deltas and per-eval regressions
+- Decides `keep` or `revert`
+- Snapshots the accepted skill under `autopilot/accepted/iteration-N/`
+- Writes `autopilot/state.json` and `autopilot/decisions/iteration-N.{json,md}`
+- Generates the next candidate skill under `iteration-(N+1)/candidate_skill/`
+
+### Keep / revert policy
+
+The script defaults to a conservative policy:
+- Keep only when mean pass rate clearly improves, or quality is tied and efficiency improves
+- Revert if any eval regresses past the configured threshold
+- Stop automatically once the accepted winner hits the target pass rate enough times in a row
+- Hard-stop at `--max-iterations` (default 20) as a safety fuse, even if target is not yet met
+
+Tune with flags if needed:
+- `--min-pass-rate-gain`
+- `--max-per-eval-regression`
+- `--target-pass-rate`
+- `--target-hit-streak`
+- `--max-iterations`
+
+### Mutation guardrails
+
+The body optimizer intentionally stays narrow:
+- Preserves frontmatter exactly — no description churn here
+- Mutates the markdown body only
+- Makes one small coherent change per round
+- Logs the hypothesis and edits to `autopilot_change.json`
+
+If you also need to optimize triggering, run the description loop separately. Don't mix body changes and description changes in the same benchmark round or you won't know which one helped.
+
+---
+
 ## Advanced: Blind comparison
 
 For rigorous comparison between two skill versions, use the blind comparison system. Read `agents/comparator.md` and `agents/comparison-analyzer.md` for details. The basic idea: give two outputs to an independent agent without revealing which is which, let it judge quality, then analyze why the winner won. Always pass an explicit `output_path` to both comparator and comparison-analyzer — do not rely on implicit defaults.

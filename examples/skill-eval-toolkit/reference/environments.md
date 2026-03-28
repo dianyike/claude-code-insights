@@ -12,6 +12,8 @@ The core workflow is the same (test -> review -> improve -> repeat), but without
 
 **Description optimization**: Requires the `claude` CLI tool (`claude -p`), only available in Claude Code. Skip on Claude.ai.
 
+**Body autopilot optimization**: Also requires `claude -p`, plus reliable benchmark artifacts (`benchmark.json`, ideally `feedback.json`). Skip on Claude.ai.
+
 **Blind comparison**: Requires subagents. Skip.
 
 **Packaging**: `package_skill.py` works anywhere with Python and a filesystem. The user can download the resulting `.skill` file.
@@ -29,4 +31,5 @@ The core workflow is the same (test -> review -> improve -> repeat), but without
 - Feedback: "Submit All Reviews" downloads `feedback.json` as a file. Read it from there (may need to request access first).
 - Packaging: `package_skill.py` works with Python and a filesystem.
 - Description optimization (`run_loop.py` / `run_eval.py`) uses `claude -p` via subprocess. Save it until the skill is finalized and user agrees it's in good shape.
+- Body autopilot optimization (`body_autopilot.py` / `improve_skill_body.py`) also uses `claude -p` via subprocess. Only use it after the eval set is stable enough that keep/revert decisions mean something.
 - **Updating an existing skill**: Follow the update guidance in the Claude.ai section above.

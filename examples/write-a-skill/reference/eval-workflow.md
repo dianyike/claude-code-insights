@@ -147,6 +147,7 @@ When manual eval cycles become insufficient — too many test cases, need for st
 - **Parallel test execution** with automated grading, aggregation, and an interactive HTML viewer
 - **Benchmark statistics** (mean +/- stddev) with per-assertion variance analysis
 - **Description optimization loop** that automatically iterates on trigger accuracy with train/test split
+- **Body autopilot loop** that keeps or reverts small `SKILL.md` body mutations based on benchmark deltas
 - **Blind A/B comparison** with dedicated subagents for unbiased scoring
 
 The toolkit assumes you already know how to write skills (content types, frontmatter, progressive disclosure). Use this guide to design the skill, then the toolkit to validate and optimize it.

@@ -83,6 +83,108 @@ Tracks version progression in Improve mode. Located at workspace root.
 
 ---
 
+## autopilot/state.json
+
+Tracks body-autopilot progress across eval iterations. Located at `<workspace>/autopilot/state.json`.
+
+```json
+{
+  "schema_version": 1,
+  "skill_name": "landing-page-copy",
+  "started_at": "2026-01-15T10:30:00+00:00",
+  "original_skill_path": "/path/to/original-skill",
+  "current_best_path": "/path/to/workspace/autopilot/accepted/iteration-3",
+  "target_hit_streak": 2,
+  "iterations": [
+    {
+      "iteration": 3,
+      "decision": "keep",
+      "best_skill_path_before": "/path/to/best",
+      "candidate_skill_path": "/path/to/candidate",
+      "chosen_skill_path": "/path/to/workspace/autopilot/accepted/iteration-3",
+      "benchmark_path": "/path/to/workspace/iteration-3/benchmark.json",
+      "metrics": {
+        "candidate_pass_rate_mean": 0.92,
+        "baseline_pass_rate_mean": 0.84,
+        "pass_rate_delta": 0.08
+      },
+      "change_summary": {
+        "hypothesis": "Add a clearer headline rule and example"
+      },
+      "next_candidate_path": "/path/to/workspace/iteration-4/candidate_skill"
+    }
+  ]
+}
+```
+
+**Fields:**
+- `original_skill_path`: Skill directory the loop started from
+- `current_best_path`: Accepted winner after the latest iteration
+- `target_hit_streak`: Consecutive iterations meeting the target pass rate
+- `iterations[]`: Decision log for each autopilot round
+
+---
+
+## autopilot_change.json
+
+Saved in each generated candidate skill directory. Records the hypothesis behind the body mutation.
+
+```json
+{
+  "iteration": 4,
+  "skill_name": "landing-page-copy",
+  "source_skill_path": "/path/to/accepted-skill",
+  "output_skill_path": "/path/to/workspace/iteration-4/candidate_skill",
+  "candidate_config": "with_skill",
+  "baseline_config": "old_skill",
+  "change_summary": {
+    "hypothesis": "The skill needs a stronger opening constraint",
+    "change_scope": "small",
+    "edits": [
+      "Added a concrete pain-point opener rule",
+      "Added a short worked example"
+    ],
+    "expected_benefits": [
+      "Reduce generic first lines",
+      "Improve CTA specificity"
+    ],
+    "risk": "May over-constrain shorter outputs"
+  }
+}
+```
+
+---
+
+## autopilot decision JSON
+
+Saved at `<workspace>/autopilot/decisions/iteration-N.json`. This is the keep/revert record emitted after each benchmark round.
+
+```json
+{
+  "iteration": 4,
+  "decision": "revert",
+  "candidate_config": "with_skill",
+  "baseline_config": "old_skill",
+  "decision_notes": [
+    "Reverted because 1 eval regressed by more than 0.05."
+  ],
+  "metrics": {
+    "candidate_pass_rate_mean": 0.88,
+    "baseline_pass_rate_mean": 0.90,
+    "pass_rate_delta": -0.02,
+    "regressions": [
+      {
+        "eval_id": 2,
+        "eval_name": "cta-specificity",
+        "pass_rate_delta": -0.12
+      }
+    ]
+  }
+}
+```
+
+---
+
 ## grading.json
 
 Output from the grader agent. Located at `<run-dir>/grading.json`.

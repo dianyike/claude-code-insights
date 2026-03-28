@@ -48,7 +48,7 @@ Claude Code 的 CLAUDE.md、Skills 與 Subagents 最佳實踐指南。
 | [examples/tdd](examples/tdd) | TDD 工作流程 — red-green-refactor 垂直切片，附測試範例、mock 指南與深模組設計參考 | 功能開發與 Bug 修復 |
 | [examples/prd-to-plan](examples/prd-to-plan) | PRD 轉實作計畫 — 將需求拆成 tracer bullet 垂直切片，輸出至 `./plans/`，並可選擇加入 Codex 審核高風險計畫 | 需求拆解與階段規劃 |
 | [examples/write-a-skill](examples/write-a-skill) | Skill Builder 後設 Skill — 內容類型決策、呼叫控制、安全配置、Gotchas 迭代回饋循環，含 eval 工作流參考 | 建立新 Skill |
-| [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill 評測工具包 — eval 驅動測試、量化基準測試、盲測 A/B 比較、description 觸發優化自動迭代迴圈 | 驗證與優化現有 Skill |
+| [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill 評測工具包 — eval 驅動測試、量化基準測試、盲測 A/B 比較、description 觸發優化，以及 SKILL.md body 的 autopilot keep/revert 迴圈 | 驗證與優化現有 Skill |
 
 **個人開發工作流程**：`/grill-me`（質詢設計）→ `/write-prd`（撰寫 PRD）→ `/prd-to-plan`（拆成階段，可選擇用 Codex 審核）→ `/tdd`（逐步實作）
 
@@ -96,7 +96,7 @@ Claude：（載入 write-a-skill，訪談需求，產出 SKILL.md 草稿，跑 s
 | **comparison-analyzer** | 事後分析 — 解盲後找出贏家勝出的原因 |
 | **benchmark-analyzer** | 從 benchmark 數據中挖掘聚合統計隱藏的模式 |
 
-工作流程：建立測試 prompt → with-skill 與 baseline 並行執行 → 評分 → 聚合 benchmark → 互動式 viewer 供人工審查 → 改善 → 重複。另含自動化 description 觸發優化（train/test split、迭代改進）。
+工作流程：建立測試 prompt → with-skill 與 baseline 並行執行 → 評分 → 聚合 benchmark → 互動式 viewer 供人工審查 → 改善 → 重複。另含自動化 description 觸發優化（train/test split、迭代改進），以及用 benchmark 結果驅動的 SKILL.md body autopilot 迭代。
 
 ```
 你：「評測我的 json-diff skill，看看它到底有沒有用」

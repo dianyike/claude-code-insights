@@ -3,3 +3,4 @@
 .agents-output/
 .claude/
 .mcp.json
+__pycache__/

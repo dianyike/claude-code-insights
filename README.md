@@ -48,7 +48,7 @@ The following Skills are adapted from [mattpocock/skills](https://github.com/mat
 | [examples/tdd](examples/tdd) | TDD Workflow — red-green-refactor vertical slices with test examples, mock guidelines, and deep module design reference | Feature development and bug fixes |
 | [examples/prd-to-plan](examples/prd-to-plan) | PRD to Implementation Plan — breaks requirements into tracer bullet vertical slices, outputs to `./plans/`, with optional Codex review for high-risk plans | Requirements decomposition and phase planning |
 | [examples/write-a-skill](examples/write-a-skill) | Skill Builder Meta-Skill — content type decisions, invocation control, security configuration, Gotchas iteration loop. Includes eval workflow reference | Creating new Skills |
-| [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill Eval Toolkit — eval-driven testing, quantitative benchmarking, blind A/B comparison, description trigger optimization with automated iteration loop | Validating and optimizing existing Skills |
+| [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill Eval Toolkit — eval-driven testing, quantitative benchmarking, blind A/B comparison, description trigger optimization, and SKILL.md body autopilot keep/revert loop | Validating and optimizing existing Skills |
 
 **Solo Development Workflow**: `/grill-me` (interrogate the design) → `/write-prd` (write the PRD) → `/prd-to-plan` (break into phases, optionally review with Codex) → `/tdd` (implement one by one)
 
@@ -96,7 +96,7 @@ Use when you have **an existing skill and want to measure or improve it**. Provi
 | **comparison-analyzer** | Post-hoc analysis — unblinds results, identifies why the winner won |
 | **benchmark-analyzer** | Surface patterns in benchmark data that aggregate stats hide |
 
-The workflow: create test prompts → run with-skill and baseline in parallel → grade → aggregate benchmarks → interactive viewer for human review → improve → repeat. Also includes automated description trigger optimization (train/test split, iterative improvement).
+The workflow: create test prompts → run with-skill and baseline in parallel → grade → aggregate benchmarks → interactive viewer for human review → improve → repeat. Also includes automated description trigger optimization (train/test split, iterative improvement) and an eval-driven body autopilot loop for small `SKILL.md` mutations.
 
 ```
 You: "Evaluate my json-diff skill and tell me if it actually adds value"
