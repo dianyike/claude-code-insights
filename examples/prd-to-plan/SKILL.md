@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Grep, Glob
 
 # PRD to Plan
 
-Break a PRD into a phased implementation plan using vertical slices (tracer bullets). Output is a Markdown file in `./plans/`.
+Break a PRD into a phased implementation plan using vertical slices (tracer bullets). Output is a Markdown file in `docs/plans/`.
 
 ## Process
 
