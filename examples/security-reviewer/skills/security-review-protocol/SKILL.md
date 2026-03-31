@@ -138,6 +138,10 @@ Where:
 
 ## 4. Fix-Verify Loop
 
+> **Boundary**: This section is ONLY executed via `/security:fix` in the main conversation.
+> The `security-reviewer` subagent and all gate hooks MUST stop at Section 3.
+> Review (Steps 1-3) is read-only; remediation (Step 4) requires explicit user opt-in.
+
 After findings are confirmed (confidence >= 50%), enter the fix-verify loop to remediate and validate fixes.
 
 ### 4.0 Mode Boundary

@@ -6,35 +6,52 @@ A working example of a security-focused subagent that cross-validates findings b
 
 ```
 You → Claude Code (Main Agent)
-       ↓
-   security-reviewer (Subagent, Sonnet)
-       ↓
-   ┌─────────────────────────────┐
-   │ Step 1: Semgrep Baseline     │  semgrep_scan + semgrep_findings
-   │ Independent judgment first   │  + supply chain + manual Grep
-   └──────────┬──────────────────┘
-              ↓
-   ┌─────────────────────────────┐
-   │ Step 2: Codex Second Opinion │  mcp__codex__codex (read-only)
-   │ MCP tool call, no custom     │  mcp__codex__codex-reply (follow-up)
-   │ protocol needed              │
-   └──────────┬──────────────────┘
-              ↓
-   ┌─────────────────────────────┐
-   │ Step 3: Cross-Validation     │  security-review-protocol skill
-   │ Confidence scoring           │  Semgrep 60% / Codex 40% weight
-   │ Conflict → conservative      │  False negative > false positive
-   └──────────┬──────────────────┘
-              ↓
-   ┌─────────────────────────────┐
-   │ Step 4: Fix-Verify Loop      │  Convergence-hardened:
-   │ Known Fix Gate → Codex fix   │  - Falsifiable prediction block
-   │ Prediction → Semgrep verify  │  - Fresh-session strategy reset
-   │ Hypothesis ledger            │  - Tiered rollback rules
-   └──────────┬──────────────────┘
-              ↓
-   Report → .agents-output/security/
-   Return → verdict + counts + file path
+       │
+       ├─ /security:review [--base] [--scope] [--background]
+       │       ↓
+       │   security-reviewer (Subagent, Sonnet, READ-ONLY)
+       │       ↓
+       │   ═══════════════════════════════════════════════
+       │     READ-ONLY boundary (review never crosses)
+       │   ═══════════════════════════════════════════════
+       │       ↓
+       │   ┌─────────────────────────────┐
+       │   │ Step 1: Semgrep Baseline     │  semgrep_scan + semgrep_findings
+       │   │ Independent judgment first   │  + supply chain + manual Grep
+       │   └──────────┬──────────────────┘
+       │              ↓
+       │   ┌─────────────────────────────┐
+       │   │ Step 2: Codex Second Opinion │  mcp__codex__codex (read-only)
+       │   │ MCP tool call               │  mcp__codex__codex-reply (follow-up)
+       │   └──────────┬──────────────────┘
+       │              ↓
+       │   ┌─────────────────────────────┐
+       │   │ Step 3: Cross-Validation     │  security-review-protocol skill
+       │   │ Confidence scoring           │  Semgrep 60% / Codex 40% weight
+       │   │ Conflict → conservative      │  False negative > false positive
+       │   └──────────┬──────────────────┘
+       │              ↓
+       │   Report → .agents-output/security/
+       │   Return → verdict + counts + suggested /security:fix command
+       │
+       ├─ /security:fix <report> [--finding] [--deep]
+       │       ↓
+       │   ═══════════════════════════════════════════════
+       │     WRITE boundary (explicit user opt-in only)
+       │   ═══════════════════════════════════════════════
+       │       ↓
+       │   Runs in MAIN CONVERSATION (not a subagent)
+       │       ↓
+       │   ┌─────────────────────────────┐
+       │   │ Step 4: Fix-Verify Loop      │  Convergence-hardened:
+       │   │ Known Fix Gate → Codex fix   │  - Falsifiable prediction block
+       │   │ Prediction → Semgrep verify  │  - User confirmation per fix
+       │   │ Hypothesis ledger            │  - Fresh-session strategy reset
+       │   └──────────┬──────────────────┘  - Tiered rollback rules
+       │              ↓
+       │   Modified files + hypothesis ledger appended to report
+       │
+       └─ /security:status / result / cancel   ← job management
 ```
 
 ## File Structure
@@ -42,10 +59,14 @@ You → Claude Code (Main Agent)
 ```
 .claude/
 ├── agents/
-│   └── security-reviewer.md              # Subagent: role + workflow + completion
+│   └── security-reviewer.md              # Subagent: read-only audit (Steps 1-3)
 └── skills/
+    ├── security-review/
+    │   └── SKILL.md                       # /security:review command (target resolution)
+    ├── security-fix/
+    │   └── SKILL.md                       # /security:fix command (main-conversation remediation)
     └── security-review-protocol/
-        ├── SKILL.md                       # Core logic: cross-validation + scoring
+        ├── SKILL.md                       # Core logic: cross-validation + scoring + fix-verify
         ├── reference/
         │   └── mcp-tools.md               # MCP tool call patterns (on-demand)
         └── templates/
@@ -72,7 +93,17 @@ cp -r skills/security-review-protocol YOUR_PROJECT/.claude/skills/
 
 ### 2. Trigger a security review
 
-Say any of these to Claude Code:
+Use the slash command:
+
+```
+/security:review                         # Auto-detect scope
+/security:review --base develop          # Diff against develop branch
+/security:review --scope staged          # Only staged changes
+/security:review src/auth/               # Filter to specific path
+/security:review --background            # Run in background
+```
+
+Or say any of these to Claude Code (trigger words):
 
 - "security check"
 - "audit code"
@@ -87,18 +118,44 @@ Or explicitly: `@security-reviewer`
 
 Reports are written to `.agents-output/security/YYYY-MM-DD-<scope>-security-review.md`.
 
+### 4. Fix findings (opt-in)
+
+```
+/security:fix .agents-output/security/2026-03-31-auth-security-review.md
+/security:fix .agents-output/security/2026-03-31-auth-security-review.md --finding F-003
+/security:fix .agents-output/security/2026-03-31-auth-security-review.md --dry-run
+```
+
+This runs in the main conversation (not a subagent) so you can confirm each fix before it's applied.
+
 ## Design Principles
+
+### Review/Fix Boundary
+
+| Action | Entry point | Write permission | Execution context |
+|--------|------------|-----------------|-------------------|
+| **Review** | `/security:review` | Read-only | Subagent (isolated context) |
+| **Fix** | `/security:fix` | Write (opt-in) | Main conversation (user-visible) |
+| **Gate** | Stop hook | Read-only | Subagent |
+
+Why `/security:fix` runs in the main conversation instead of a subagent:
+- Fix-verify requires user confirmation before each code change
+- Prediction blocks must be visible to the user (not hidden in a black box)
+- The fix needs full context from the review (findings, Codex threadId)
+- Splitting reviewer → fixer by role is a subagent anti-pattern (telephone game)
 
 ### Content Layering (No Duplication)
 
 | Layer | Contains | Does NOT contain |
 |-------|----------|-----------------|
 | Subagent prompt | Role, workflow steps, output location, completion checklist | Business logic, scoring formulas, MCP parameters |
-| SKILL.md | Cross-validation logic, conflict resolution, confidence scoring, Fix-Verify Loop (prediction blocks, iteration protocol, rollback rules, hypothesis ledger) | MCP call examples, report template |
+| /security:review skill | Command interface, target resolution | Business logic, MCP parameters |
+| /security:fix skill | Fix command interface, confirmation flow | Scoring formulas, MCP parameters |
+| security-review-protocol SKILL.md | Cross-validation logic, conflict resolution, confidence scoring, Fix-Verify Loop (prediction blocks, iteration protocol, rollback rules, hypothesis ledger) | MCP call examples, report template |
 | reference/ | MCP tool call patterns and parameters | Business logic |
 | templates/ | Report markdown structure | Analysis logic |
 
-Each piece of information lives in exactly one place. The subagent references the skill; the skill references its appendices.
+Each piece of information lives in exactly one place. The subagent references the protocol skill; the command skills define the user-facing interface.
 
 ### Trust-but-Verify Protocol
 
