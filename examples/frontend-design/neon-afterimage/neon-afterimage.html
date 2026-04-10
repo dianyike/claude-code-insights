@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林夜 Lín Yè — 霓虹殘像 Neon Afterimage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+  :root {
+    --navy: #0a0e1a;
+    --deep-blue: #111833;
+    --neon-pink: #ff2d7b;
+    --neon-pink-glow: #ff2d7b88;
+    --neon-magenta: #e01f6f;
+    --warm-amber: #f5a623;
+    --warm-amber-dim: #c4851c;
+    --cream: #f0e6d3;
+    --cream-dim: #c4b9a8;
+    --slate: #8b9ab5;
+    --scan-line: rgba(255, 255, 255, 0.015);
+    --font-display: 'Noto Serif TC', serif;
+    --font-body: 'Cormorant Garamond', serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+
+  body {
+    background: var(--navy);
+    color: var(--cream);
+    font-family: var(--font-body);
+    line-height: 1.7;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ─── CRT Scan-line overlay ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+  }
+
+  /* Slow drifting scan band */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 8px;
+    pointer-events: none;
+    z-index: 9998;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(255, 45, 123, 0.06),
+      rgba(255, 255, 255, 0.03),
+      transparent
+    );
+    animation: scanDrift 8s linear infinite;
+  }
+
+  @keyframes scanDrift {
+    0% { transform: translateY(-8px); }
+    100% { transform: translateY(100vh); }
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 200px;
+    background: linear-gradient(to top, var(--navy), transparent);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* ─── Hero Left: Album Art ─── */
+  .hero-art {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    position: relative;
+  }
+
+  .album-cover {
+    width: 420px;
+    height: 420px;
+    position: relative;
+    border: 1px solid rgba(255, 45, 123, 0.15);
+    background: linear-gradient(
+      160deg,
+      #0d1225 0%,
+      #111a35 30%,
+      #1a1230 60%,
+      #0f0a1e 100%
+    );
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* Rain streaks on the cover */
+  .album-cover::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background:
+      linear-gradient(180deg, transparent 0%, transparent 40%, rgba(255,45,123,0.03) 60%, rgba(255,45,123,0.08) 100%),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        transparent 18px,
+        rgba(255,255,255,0.012) 18px,
+        rgba(255,255,255,0.012) 19px
+      );
+    z-index: 1;
+  }
+
+  /* Wet asphalt reflection at bottom */
+  .album-cover::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 35%;
+    background: linear-gradient(
+      to top,
+      rgba(255, 45, 123, 0.12),
+      rgba(245, 166, 35, 0.04),
+      transparent
+    );
+    z-index: 1;
+    filter: blur(1px);
+  }
+
+  /* Neon kanji — the centerpiece */
+  .neon-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    z-index: 3;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 900;
+    line-height: 1.1;
+  }
+
+  .neon-char {
+    display: block;
+    font-size: 5.5rem;
+    color: var(--neon-pink);
+    text-shadow:
+      0 0 7px var(--neon-pink),
+      0 0 20px var(--neon-pink-glow),
+      0 0 42px rgba(255, 45, 123, 0.3),
+      0 0 82px rgba(255, 45, 123, 0.15);
+    animation: neonPulse 4s ease-in-out infinite alternate;
+    letter-spacing: 0.15em;
+  }
+
+  .neon-char:nth-child(2) {
+    animation-delay: -1s;
+  }
+
+  .neon-sub {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.5em;
+    color: var(--warm-amber);
+    text-shadow: 0 0 12px rgba(245, 166, 35, 0.4);
+    margin-top: 1.2rem;
+    opacity: 0.9;
+  }
+
+  @keyframes neonPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.88; }
+    73% { opacity: 0.95; }
+    77% { opacity: 0.82; }
+    80% { opacity: 1; }
+  }
+
+  /* Corner accents on cover */
+  .cover-corner {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    z-index: 4;
+    opacity: 0.3;
+  }
+  .cover-corner--tl { top: 16px; left: 16px; border-top: 1px solid var(--warm-amber); border-left: 1px solid var(--warm-amber); }
+  .cover-corner--tr { top: 16px; right: 16px; border-top: 1px solid var(--warm-amber); border-right: 1px solid var(--warm-amber); }
+  .cover-corner--bl { bottom: 16px; left: 16px; border-bottom: 1px solid var(--warm-amber); border-left: 1px solid var(--warm-amber); }
+  .cover-corner--br { bottom: 16px; right: 16px; border-bottom: 1px solid var(--warm-amber); border-right: 1px solid var(--warm-amber); }
+
+  /* Vertical rain-drop SVG lines on cover */
+  .rain-lines {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 2;
+    opacity: 0.15;
+  }
+
+  .rain-line {
+    stroke: var(--cream);
+    stroke-width: 0.5;
+    animation: rainFall 3s linear infinite;
+  }
+  .rain-line:nth-child(2) { animation-delay: -0.8s; animation-duration: 2.6s; }
+  .rain-line:nth-child(3) { animation-delay: -1.5s; animation-duration: 3.4s; }
+  .rain-line:nth-child(4) { animation-delay: -0.3s; animation-duration: 2.9s; }
+  .rain-line:nth-child(5) { animation-delay: -2.1s; animation-duration: 3.1s; }
+
+  @keyframes rainFall {
+    0% { transform: translateY(-20px); opacity: 0; }
+    10% { opacity: 0.15; }
+    90% { opacity: 0.15; }
+    100% { transform: translateY(420px); opacity: 0; }
+  }
+
+  /* ─── Hero Right: Info ─── */
+  .hero-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 5rem 4rem 3rem;
+    position: relative;
+    z-index: 3;
+  }
+
+  .artist-name {
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 1.5rem;
+  }
+
+  .ep-title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 4.2rem;
+    line-height: 1.15;
+    color: var(--cream);
+    margin-bottom: 0.4rem;
+  }
+
+  .ep-title-en {
+    font-family: var(--font-body);
+    font-weight: 300;
+    font-style: italic;
+    font-size: 1.5rem;
+    color: var(--neon-pink);
+    opacity: 0.7;
+    margin-bottom: 2rem;
+    letter-spacing: 0.08em;
+  }
+
+  .release-meta {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: var(--slate);
+    letter-spacing: 0.15em;
+    margin-bottom: 3rem;
+  }
+
+  .release-meta span {
+    color: var(--warm-amber);
+  }
+
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 1rem 2.8rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--navy);
+    background: var(--neon-pink);
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    min-height: 48px;
+    line-height: 1;
+    box-shadow: 0 0 20px rgba(255, 45, 123, 0.25);
+  }
+
+  .cta-button:hover {
+    background: var(--warm-amber);
+    box-shadow: 0 0 30px rgba(245, 166, 35, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .cta-button:focus-visible {
+    outline: 2px solid var(--warm-amber);
+    outline-offset: 4px;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 3rem;
+    right: 5rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    letter-spacing: 0.3em;
+    color: var(--slate);
+    opacity: 0.5;
+    writing-mode: vertical-rl;
+    animation: scrollHintPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes scrollHintPulse {
+    0%, 100% { opacity: 0.5; transform: translateY(0); }
+    50% { opacity: 0.3; transform: translateY(6px); }
+  }
+
+  /* ─── SECTION: Tracklist ─── */
+  .section {
+    padding: 6rem 8rem;
+    position: relative;
+  }
+
+  .section--tracklist {
+    border-top: 1px solid rgba(255, 45, 123, 0.08);
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: var(--neon-pink);
+    opacity: 0.7;
+    margin-bottom: 3rem;
+  }
+
+  .tracklist {
+    list-style: none;
+    max-width: 700px;
+  }
+
+  .track {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr auto;
+    align-items: baseline;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid rgba(139, 154, 181, 0.08);
+    gap: 1.5rem;
+    transition: all 0.2s ease;
+  }
+
+  .track:hover {
+    background: rgba(255, 45, 123, 0.02);
+    padding-left: 0.5rem;
+    margin-left: -0.5rem;
+    padding-right: 0.5rem;
+    margin-right: -0.5rem;
+  }
+
+  .track-num {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: var(--slate);
+    opacity: 0.6;
+  }
+
+  .track-name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--cream);
+  }
+
+  .track-duration {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: var(--slate);
+    opacity: 0.7;
+  }
+
+  .track--focus .track-name {
+    color: var(--neon-pink);
+  }
+
+  .track--focus .track-name::after {
+    content: 'SINGLE';
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    color: var(--warm-amber);
+    border: 1px solid rgba(245, 166, 35, 0.4);
+    padding: 0.2rem 0.6rem;
+    margin-left: 1rem;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+  }
+
+  /* ─── SECTION: About ─── */
+  .section--about {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 4rem;
+    border-top: 1px solid rgba(255, 45, 123, 0.08);
+  }
+
+  .about-text {
+    max-width: 600px;
+  }
+
+  .about-text p {
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    font-weight: 300;
+    line-height: 1.85;
+    color: var(--cream-dim);
+    margin-bottom: 1.8rem;
+  }
+
+  .about-text p:first-child::first-line {
+    color: var(--cream);
+    font-weight: 400;
+  }
+
+  .about-aside {
+    padding-top: 0.5rem;
+  }
+
+  .about-aside .aside-block {
+    margin-bottom: 3rem;
+  }
+
+  .aside-heading {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 1rem;
+    opacity: 0.7;
+  }
+
+  /* ─── SECTION: Listen ─── */
+  .section--listen {
+    border-top: 1px solid rgba(255, 45, 123, 0.08);
+    text-align: center;
+    padding: 5rem 8rem;
+  }
+
+  .listen-links {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    margin-top: 2.5rem;
+  }
+
+  .listen-link {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    text-decoration: none;
+    color: var(--slate);
+    padding: 0.8rem 0.5rem;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .listen-link:hover {
+    color: var(--neon-pink);
+    border-bottom-color: var(--neon-pink);
+    text-shadow: 0 0 12px var(--neon-pink-glow);
+  }
+
+  .listen-link:focus-visible {
+    outline: 2px solid var(--warm-amber);
+    outline-offset: 4px;
+  }
+
+  /* ─── SECTION: Credits ─── */
+  .section--credits {
+    border-top: 1px solid rgba(255, 45, 123, 0.08);
+    padding: 4rem 8rem 6rem;
+  }
+
+  .credits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 800px;
+  }
+
+  .credit-item {
+    padding: 0;
+  }
+
+  .credit-role {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--slate);
+    opacity: 0.6;
+    margin-bottom: 0.5rem;
+  }
+
+  .credit-name {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--cream-dim);
+  }
+
+  /* ─── Footer ─── */
+  .site-footer {
+    padding: 3rem 8rem;
+    border-top: 1px solid rgba(139, 154, 181, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: var(--slate);
+    opacity: 0.4;
+    letter-spacing: 0.15em;
+  }
+
+  .footer-right {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: var(--slate);
+    opacity: 0.4;
+    letter-spacing: 0.15em;
+  }
+
+  /* ─── Ambient: floating neon dot ─── */
+  .ambient-orb {
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,45,123,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+    top: 30%;
+    right: -100px;
+    animation: orbFloat 20s ease-in-out infinite;
+  }
+
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0); opacity: 0.4; }
+    25% { transform: translate(-40px, 60px); opacity: 0.6; }
+    50% { transform: translate(-20px, -30px); opacity: 0.3; }
+    75% { transform: translate(30px, 40px); opacity: 0.5; }
+  }
+
+  /* ─── Scroll reveal ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── Responsive guard ─── */
+  @media (max-width: 1080px) {
+    .hero { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+    .hero-art { padding: 6rem 2rem 2rem; }
+    .hero-info { padding: 2rem 2rem 6rem; text-align: center; }
+    .album-cover { width: 320px; height: 320px; }
+    .neon-char { font-size: 4rem; }
+    .ep-title { font-size: 2.8rem; }
+    .section { padding: 4rem 2rem; }
+    .section--about { grid-template-columns: 1fr; gap: 2rem; }
+    .section--listen { padding: 4rem 2rem; }
+    .section--credits { padding: 3rem 2rem 4rem; }
+    .credits-grid { grid-template-columns: 1fr 1fr; }
+    .site-footer { padding: 2rem; flex-direction: column; gap: 1rem; }
+    .scroll-hint { display: none; }
+    .artist-name { letter-spacing: 0.2em; }
+    .cta-button { padding: 1rem 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient-orb" aria-hidden="true"></div>
+
+<!-- ═══════ HERO ═══════ -->
+<section class="hero">
+  <div class="hero-art">
+    <div class="album-cover">
+      <div class="cover-corner cover-corner--tl"></div>
+      <div class="cover-corner cover-corner--tr"></div>
+      <div class="cover-corner cover-corner--bl"></div>
+      <div class="cover-corner cover-corner--br"></div>
+
+      <svg class="rain-lines" viewBox="0 0 420 420" preserveAspectRatio="none" aria-hidden="true">
+        <line class="rain-line" x1="87" y1="0" x2="87" y2="40" />
+        <line class="rain-line" x1="203" y1="0" x2="203" y2="35" />
+        <line class="rain-line" x1="312" y1="0" x2="312" y2="45" />
+        <line class="rain-line" x1="148" y1="0" x2="148" y2="30" />
+        <line class="rain-line" x1="370" y1="0" x2="370" y2="38" />
+      </svg>
+
+      <div class="neon-title">
+        <span class="neon-char">霓虹</span>
+        <span class="neon-char">殘像</span>
+        <span class="neon-sub">Neon Afterimage</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-info">
+    <p class="artist-name">林夜 Lín Yè</p>
+    <h1 class="ep-title">霓虹殘像</h1>
+    <p class="ep-title-en">Neon Afterimage</p>
+    <p class="release-meta"><span>EP</span> — 2026.05.16 — <span>6 Tracks</span></p>
+    <a href="#listen" class="cta-button">Pre-save</a>
+  </div>
+
+  <span class="scroll-hint" aria-hidden="true">SCROLL</span>
+</section>
+
+<!-- ═══════ TRACKLIST ═══════ -->
+<section class="section section--tracklist reveal">
+  <p class="section-label">Tracklist</p>
+  <ol class="tracklist">
+    <li class="track">
+      <span class="track-num">01</span>
+      <span class="track-name">入夜信號</span>
+      <span class="track-duration">4:12</span>
+    </li>
+    <li class="track track--focus">
+      <span class="track-num">02</span>
+      <span class="track-name">雨中便利店</span>
+      <span class="track-duration">3:47</span>
+    </li>
+    <li class="track">
+      <span class="track-num">03</span>
+      <span class="track-name">民權東路 02:00</span>
+      <span class="track-duration">6:17</span>
+    </li>
+    <li class="track">
+      <span class="track-num">04</span>
+      <span class="track-name">殘像</span>
+      <span class="track-duration">3:58</span>
+    </li>
+    <li class="track">
+      <span class="track-num">05</span>
+      <span class="track-name">冷氣房的夏天</span>
+      <span class="track-duration">4:33</span>
+    </li>
+    <li class="track">
+      <span class="track-num">06</span>
+      <span class="track-name">天亮以前（我們開過了整座城市）</span>
+      <span class="track-duration">5:41</span>
+    </li>
+  </ol>
+</section>
+
+<!-- ═══════ ABOUT ═══════ -->
+<section class="section section--about reveal">
+  <div class="about-aside">
+    <p class="section-label">About</p>
+    <div class="aside-block">
+      <p class="aside-heading">Recorded at</p>
+      <p class="credit-name">浮光錄音室, 台北萬華<br>2025 年 9 月 — 12 月</p>
+    </div>
+    <div class="aside-block">
+      <p class="aside-heading">Format</p>
+      <p class="credit-name">Digital / Limited Cassette</p>
+    </div>
+  </div>
+
+  <div class="about-text">
+    <p>《霓虹殘像》的起點是一段凌晨兩點的車程。林夜在 2025 年夏末開始在萬華一間地下室錄音室進行錄製，那裡的空調壞了三週，他索性把窗戶打開，讓外面的街聲、雨聲、遠處捷運的震動一起錄進去。整張 EP 你聽得到台北的體溫——潮濕的、燥熱的、在冷氣房裡被壓縮的。</p>
+
+    <p>製作人王志遠帶來了一台 Roland Juno-106 和一櫃子的卡帶式效果器，把林夜原本乾淨的吉他demo 全部推進了合成器的霧氣裡。他們花了兩個月的時間讓每一首歌找到自己在深夜台北的位置：〈入夜信號〉是過了忠孝復興之後高架橋上的視角；〈雨中便利店〉是那種你站在 7-11 門口等雨停但其實不想回家的時刻；〈民權東路 02:00〉是整張 EP 最長的一首，六分鐘裡合成器 pad 慢慢把整首歌吞掉，像路燈在大雨裡慢慢模糊。</p>
+
+    <p>這不是一張懷舊的作品。林夜說：「City pop 的復興已經變成一種濾鏡了，我不想做那種。我想做的是——你現在，此刻，在這座城市裡開車的感覺。霓虹燈還是一樣的霓虹燈，但看它的人不一樣了。」《霓虹殘像》就是他對此刻台北的一張快照，在它被拆掉或改建之前。</p>
+  </div>
+</section>
+
+<!-- ═══════ LISTEN ═══════ -->
+<section class="section section--listen reveal" id="listen">
+  <p class="section-label">Listen / Buy</p>
+  <nav class="listen-links" aria-label="串流與購買連結">
+    <a href="#" class="listen-link">Spotify</a>
+    <a href="#" class="listen-link">Apple Music</a>
+    <a href="#" class="listen-link">Bandcamp</a>
+    <a href="#" class="listen-link">YouTube Music</a>
+  </nav>
+</section>
+
+<!-- ═══════ CREDITS ═══════ -->
+<section class="section section--credits reveal">
+  <p class="section-label">Credits</p>
+  <div class="credits-grid">
+    <div class="credit-item">
+      <p class="credit-role">Produced by</p>
+      <p class="credit-name">王志遠 (Zhiyuan Wang)</p>
+    </div>
+    <div class="credit-item">
+      <p class="credit-role">Written & Performed by</p>
+      <p class="credit-name">林夜 (Lín Yè)</p>
+    </div>
+    <div class="credit-item">
+      <p class="credit-role">Recorded at</p>
+      <p class="credit-name">浮光錄音室, 萬華</p>
+    </div>
+    <div class="credit-item">
+      <p class="credit-role">Mixed by</p>
+      <p class="credit-name">陳柏翰 (Bohan Chen)</p>
+    </div>
+    <div class="credit-item">
+      <p class="credit-role">Mastered by</p>
+      <p class="credit-name">高橋健太 (Kenta Takahashi), Tokyo</p>
+    </div>
+    <div class="credit-item">
+      <p class="credit-role">Art Direction</p>
+      <p class="credit-name">許晴 (Qing Xu)</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer class="site-footer">
+  <p class="footer-left">&copy; 2026 林夜 Lín Yè. All rights reserved.</p>
+  <p class="footer-right">浮光 FUGUAN RECORDS</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
