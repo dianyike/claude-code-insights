@@ -3,66 +3,62 @@ name: frontend-design
 description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.
 ---
 
-Build production-grade frontend interfaces. The user provides requirements for a component, page, or application.
+This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.
 
-## Before Coding
+The user provides frontend requirements: a component, page, application, or interface to build. They may include context about the purpose, audience, or technical constraints.
 
-Write a 4-line comment block at the top of the file:
+## Design Thinking
 
-1. **Who / where** — who uses this, on what device, how often
-2. **Focal point** — the single element the eye hits first; everything else supports it
-3. **Mood** — three words (e.g., "warm, editorial, quiet")
-4. **Omission** — one decoration or effect you are choosing NOT to add, and why
+Before coding, understand the context and commit to a BOLD aesthetic direction:
+- **Purpose**: What problem does this interface solve? Who uses it?
+- **Tone**: Pick an extreme: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, etc. There are so many flavors to choose from. Use these for inspiration but design one that is true to the aesthetic direction.
+- **Constraints**: Technical requirements (framework, performance, accessibility).
+- **Differentiation**: What makes this UNFORGETTABLE? What's the one thing someone will remember?
 
-## Constraints
+**CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work - the key is intentionality, not intensity.
 
-These prevent the specific failure modes LLMs fall into. Every rule is checkable.
+Then implement working code (HTML/CSS/JS, React, Vue, etc.) that is:
+- Production-grade and functional
+- Visually striking and memorable
+- Cohesive with a clear aesthetic point-of-view
+- Meticulously refined in every detail
 
-### Palette & Type
+## Frontend Aesthetics Guidelines
 
-- **2 font families max.** One display, one body. If the design is simple, one is better.
-- **2 weights only**: 400 and 500–600. Never 700+ unless (a) the brief is explicitly bold/brutalist, or (b) the weight is used on a single hero/display element (≤1 per page) where the font is specifically designed for heavy display use.
-- **Type scale**: pick 5–6 sizes from `[12, 14, 16, 18, 20, 24, 32, 42, 48, 64]px`. No sizes outside this set.
-- **3 hues + 1 accent max.** All as CSS custom properties with `-bg`, `-border`, `-text` variants. **Exception**: when the design contains multiple parallel items that need independent identity (pricing tiers, team members, category tags), you may use 1 additional hue per item — provided all additional hues share the same saturation and lightness band.
-- On colored backgrounds, text uses the darkest shade from that same hue family. No text directly on gradients without a solid backing surface.
-- **Decorative icons** (category indicators, visual texture): use tertiary text color. **Semantic icons** (checkmarks in feature lists, status indicators, success/error marks): use primary text color OR the accent color — they carry information, never let them fade into tertiary. Test: if removing the icon loses information, it's semantic.
+Focus on:
+- **Typography**: Choose fonts that are beautiful, unique, and interesting. Avoid generic fonts like Arial and Inter; opt instead for distinctive choices that elevate the frontend's aesthetics; unexpected, characterful font choices. Pair a distinctive display font with a refined body font. **Minimum readable sizes**: 14px (0.875rem) for captions, metadata, and small labels; 16px (1rem) for body text. There is no maximum — titles can be as enormous as the design demands. Maintain a clear type hierarchy (typically 4–6 distinct sizes) rather than inventing arbitrary sizes for each element. The scale itself is a creative choice; the floor is not.
+- **Color & Theme**: Commit to a cohesive aesthetic. Use CSS variables for consistency. Dominant colors with sharp accents outperform timid, evenly-distributed palettes.
+- **Motion**: Use animations for effects and micro-interactions. Prioritize CSS-only solutions for HTML. Use Motion library for React when available. Focus on high-impact moments: one well-orchestrated page load with staggered reveals (animation-delay) creates more delight than scattered micro-interactions. Use scroll-triggering and hover states that surprise.
+- **Spatial Composition**: Unexpected layouts. Asymmetry. Overlap. Diagonal flow. Grid-breaking elements. Generous negative space OR controlled density. **Never let decorative or structural elements unintentionally obscure content-carrying elements** (dates, CTAs, metadata). Overlap is a deliberate compositional tool — if an element carries information, it must remain legible. Before finalizing layout, verify every text element is readable against its actual stacking context, not just in theory.
+- **Backgrounds & Visual Details**: Create atmosphere and depth rather than defaulting to solid colors. Add contextual effects and textures that match the overall aesthetic. Apply creative forms like gradient meshes, noise textures, geometric patterns, layered transparencies, dramatic shadows, decorative borders, custom cursors, and grain overlays.
 
-### Spacing & Layout
+NEVER use generic AI-generated aesthetics like overused font families (Inter, Roboto, Arial, system fonts), cliched color schemes (particularly purple gradients on white backgrounds), predictable layouts and component patterns, and cookie-cutter design that lacks context-specific character.
 
-- Spacing values only from `[4, 8, 12, 16, 24, 32, 48, 64]px`.
-- Container padding ≈ 2× inner gap. Related items in flow ≤8px apart; between groups ≥24px.
-- **Parallel choice items** (pricing tiers, feature comparisons, option cards) need ≥16px visible gap between each — they must read as discrete choices, not a continuous block. Never use `gap: 0` on parallel choices. Parallel choice items must share the same base dimensions — differentiate the recommended item through color, weight, or border, not through size. Size mismatch breaks the "choices are comparable" contract.
-- One alignment axis per section. Never mix left/center/right in the same visual group.
-- **One focal point per viewport.** If everything is emphasized, nothing is.
+Interpret creatively and make unexpected choices that feel genuinely designed for the context. No design should be the same. Vary between light and dark themes, different fonts, different aesthetics. NEVER converge on common choices (Space Grotesk, for example) across generations.
 
-### Motion
+**IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.
 
-- **Interaction animations** (hover, click, state change): 150–300ms. Easing: `cubic-bezier(0.22, 1, 0.36, 1)` in, `ease-out` out.
-- **Ambient animations** (grain, parallax, slow drift, ambient glow): 3000–8000ms, `linear` or very soft easing, transform/opacity range ≤2%. If the user's eye tracks the motion, it's too strong — halve the intensity. Ambient should feel like "something is alive" not "something is happening."
-- **At most 1 interactive looping animation** visible at a time (spinners, pulses, attention-getters). Ambient loops (grain, drift, glow) don't count toward this limit but must each stay within ambient intensity rules.
-- Hover lift: 2–4px max with shadow deepening. Never exceed 6px.
-- Staggered reveals: ≤5 items, 60–100ms increment, total sequence <500ms.
+## Non-Negotiable Baselines
 
-### States
-
-Every interactive element needs at minimum: **Default → Hover → Disabled.** Inputs add: **Focus → Error** (with message). Empty states and success confirmations must exist — never a blank void or silent completion.
+Creative boldness does not excuse broken fundamentals. These are not aesthetic choices — they are baseline requirements that apply regardless of visual direction.
 
 ### Accessibility
 
-- Contrast ≥4.5:1 body text, ≥3:1 large text (≥24px). Touch targets ≥44×44px.
-- Never convey meaning through color alone. Visible focus indicators — never bare `outline: none`.
-- Semantic HTML: `<button>` for actions, `<a>` for navigation, headings in order.
+- Contrast ratio ≥ 4.5:1 for body text, ≥ 3:1 for large text (≥ 24px). Verify against your actual background — gradients and textures don't get a free pass.
+- Touch targets ≥ 44×44px on interactive elements.
+- Visible focus indicators on every focusable element. `outline: none` without a replacement is never acceptable.
+- Never convey meaning through color alone. Semantic HTML: `<button>` for actions, `<a>` for navigation, headings in order.
 
-## Font Selection
+### Interactive States
 
-No blacklists — they become stale. Instead, for each font ask:
-1. Does it match the mood? (geometric sans ≠ editorial; high-contrast serif ≠ utilitarian dashboard)
-2. Is this font the "safe high-design default" for this category? (Inter for SaaS, Cormorant Garamond for editorial, Space Grotesk for tech, Playfair for luxury.) If yes, commit to it only if the design is otherwise restrained — otherwise pick something one step more specific (e.g., for editorial, consider Tiempos, GT Sectra, or Canela instead of Cormorant).
-3. Does it render cleanly at the sizes I need?
+Every interactive element must have at minimum: **Default → Hover → Focus → Disabled.** Inputs add **Error** (with visible message). Empty states and success confirmations must exist — never a blank void or silent completion. A bold visual design with broken interactive feedback feels unfinished.
 
 ## The Editing Pass
 
 After the first complete implementation, before delivering:
-1. Find one element to **remove**. If removing it doesn't hurt comprehension, delete it.
-2. Count your interactive looping animations. If more than one, kill the weakest. For ambient loops, verify each stays within intensity limits — if any makes you want to look at it, halve its strength.
-3. Verify: does the focal point actually dominate? Squint at the screen — what do you see first?
+
+1. Find the **weakest** element — the one that feels safe, generic, or forgettable. Ask: is this bold enough? Push it further or cut it entirely.
+2. Check that your focal point actually dominates. Squint at the screen — what do you see first? If the answer isn't your intended focal point, fix the hierarchy.
+3. Verify that boldness didn't break the baselines above. Contrast, focus states, touch targets — confirm them last, fix without compromising the vision.
+
+Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
