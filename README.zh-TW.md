@@ -53,7 +53,7 @@
 | [examples/prd-to-plan](examples/prd-to-plan) | PRD 轉實作計畫 — 將需求拆成 tracer bullet 垂直切片，輸出至 `./plans/`，並可選擇加入 Codex 審核高風險計畫 | 需求拆解與階段規劃 |
 | [examples/write-a-skill](examples/write-a-skill) | Skill Builder 後設 Skill — 內容類型決策、呼叫控制、安全配置、Gotchas 迭代回饋循環，含 eval 工作流參考 | 建立新 Skill |
 | [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill 評測工具包 — eval 驅動測試、量化基準測試、盲測 A/B 比較、description 觸發優化，以及 SKILL.md body 的 autopilot keep/revert 迴圈 | 驗證與優化現有 Skill |
-| [examples/frontend-design](examples/frontend-design) | Frontend Design — 拒絕 AI 罐頭美學的高品質前端介面。大膽創作自由搭配不可妥協的基線（字級地板、元素遮擋防護、無障礙）。含 SKILL.md + [UMBRA 影展](examples/frontend-design/umbra-film-festival/) hero section 展示 + [霓虹殘像 Neon Afterimage](examples/frontend-design/neon-afterimage/) 獨立音樂人 EP 發行頁展示 | 打造有辨識度的前端介面 |
+| [examples/frontend-design](examples/frontend-design) | Frontend Design — 拒絕 AI 罐頭美學的高品質前端介面。大膽創作自由搭配不可妥協的基線（字級地板、元素遮擋防護、無障礙）。含 SKILL.md + [Glassmorphism Wallet](examples/frontend-design/glassmorphism-wallet/) 毛玻璃數位錢包（純 CSS 信用卡、翻轉動畫、生物發光背景球體）展示 | 打造有辨識度的前端介面 |
 
 **個人開發工作流程**：`/grill-me`（質詢設計）→ `/write-prd`（撰寫 PRD）→ `/prd-to-plan`（拆成階段，可選擇用 Codex 審核）→ `/tdd`（逐步實作）
 
