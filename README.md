@@ -2,16 +2,20 @@
 
 English | [繁體中文](README.zh-TW.md)
 
-A best practices guide for Claude Code CLAUDE.md, Skills, and Subagents.
+**The most comprehensive advanced Claude Code guide in the Chinese-speaking community** — covering CLAUDE.md architecture, Skills authoring, Subagent orchestration, with ready-to-use practical examples.
 
-This repository compiles and organizes content primarily from Anthropic's official documentation, community articles, and popular GitHub repositories — credit goes to the original authors. This is a curated collection of what I've learned along the way, not **original research**.
+> Maintained by **dianyike / 典億創研工作室**. Freelance engineer specializing in web development, web scraping automation, and API integration. This repo is a distillation of my real-world experience using Claude Code in client projects.
+>
+> <!-- TODO: Replace with your actual links -->
+> [Website](https://dianyistudio.com/) · [Threads](https://www.threads.com/@dianyike1013) · [Contact](mailto:service@dianyistudio.com)
 
 ## Who Is This For
 
-Developers ranging from Claude Code beginners to those looking to master Skills and Subagent design patterns.
-
-- **Beginners**: Start with the CLAUDE.md guide to build a solid foundation
-- **Advanced**: The Skills and Subagent guides cover design patterns and architectural strategies
+| You are... | Start here | What you'll get |
+|------------|-----------|-----------------|
+| **New to Claude Code** | [CLAUDE.md Guide](claude-md-best-practices.md) | Understand the three-layer architecture, Hooks, and how to avoid common anti-patterns |
+| **Experienced, looking to level up** | [Skills Guide](skills-best-practices.md) → [Subagent Guide](subagent-best-practices.md) | Hub-and-Spoke architecture, decision matrices, black-box problem solutions |
+| **Freelancer / Solo developer** | [Practical Examples](#practical-examples): grill-me → write-prd → prd-to-plan → tdd | A complete workflow from design interrogation to TDD implementation |
 
 ## Contents
 
@@ -39,7 +43,7 @@ The three guides cross-reference each other. Recommended reading order: CLAUDE.m
 
 ### Skills Examples
 
-The following Skills are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (implementing concepts like design trees and TDD vertical slices), reworked according to this repository's best practices guide: templates extracted to `templates/`, reference materials moved to `reference/`, and Gotchas sections added.
+The following Skills are adapted from [mattpocock/skills](https://github.com/mattpocock/skills), reworked with templates extracted to `templates/`, reference materials moved to `reference/`, and Gotchas sections added.
 
 | Example | Description | Use Case |
 |---------|-------------|----------|
@@ -135,6 +139,30 @@ Claude: (loads skill-eval-toolkit, creates test cases, spawns parallel runs,
 - Research-type and review-type Agent design templates
 - Hub-and-Spoke architectural pattern
 - The Early Victory Problem and mitigation strategies
+
+## About / Freelance Services
+
+<!-- TODO: Replace with your actual links and content -->
+
+I'm **dianyike**, running **典億創研工作室** (Dianyi Studio) as a freelance engineer.
+
+| Service | Description |
+|---------|-------------|
+| Web Design & Development | Responsive websites, landing pages, admin dashboards |
+| Web Scraping Automation | Data extraction, scheduled jobs, anti-bot strategies |
+| API Integration | Third-party API connections, data sync, webhook design |
+
+Interested in working together?
+
+- [Website](https://dianyistudio.com/)
+- [Threads](https://threads.net/@dianyike1013)
+- [Email](mailto:service@dianyistudio.com)
+
+## Acknowledgments
+
+This repository compiles and organizes content from Anthropic's official documentation, community articles, and popular GitHub repositories — credit goes to the original authors. My contribution is the Chinese localization, structured curation, and practical decision frameworks drawn from real project experience.
+
+Skills examples are adapted from [mattpocock/skills](https://github.com/mattpocock/skills), reworked according to this repository's best practices guide.
 
 ## License
 

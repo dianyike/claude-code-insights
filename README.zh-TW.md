@@ -2,16 +2,20 @@
 
 [English](README.md) | 繁體中文
 
-Claude Code 的 CLAUDE.md、Skills 與 Subagents 最佳實踐指南。
+**中文社群最完整的 Claude Code 進階指南** — 涵蓋 CLAUDE.md 架構設計、Skills 撰寫、Subagent 編排，附可直接使用的實戰範例。
 
-本儲存庫主要彙整自 Anthropic 官方文件、社群文章與熱門 GitHub 儲存庫，相關觀點與設計模式皆歸功於原作者。這是我在學習過程中的整理與摘錄，並非**原創研究**。
+> 由 **dianyike / 典億創研工作室** 維護。獨立接案工程師，專注於網頁設計、爬蟲自動化、API 串接。這個 repo 是我實際接案時使用 Claude Code 的心得整理。
+>
+> <!-- TODO: 替換為你的實際連結 -->
+> [個人網站](https://dianyistudio.com/) · [Threads](https://threads.net/@dianyike1013) · [接案詢問](mailto:service@dianyistudio.com)
 
 ## 適合誰
 
-從剛接觸 Claude Code 的新手到想深入掌握 Skills 和 Subagent 設計模式的開發者。
-
-- **新手**：從 CLAUDE.md 指南開始，建立正確的基礎觀念
-- **進階**：Skills 和 Subagent 指南涵蓋設計模式與架構策略
+| 你是... | 從這裡開始 | 你會得到什麼 |
+|---------|-----------|-------------|
+| **剛接觸 Claude Code** | [CLAUDE.md 指南](claude-md-best-practices.zh-TW.md) | 理解三層架構、Hooks 機制，避開最常見的反模式 |
+| **已有使用經驗，想進階** | [Skills 指南](skills-best-practices.zh-TW.md) → [Subagent 指南](subagent-best-practices.zh-TW.md) | 掌握 Hub-and-Spoke 架構、決策矩陣、黑箱問題解法 |
+| **接案工程師 / 獨立開發者** | [實戰範例](#實戰範例)：grill-me → write-prd → prd-to-plan → tdd | 一套從需求質詢到 TDD 實作的完整工作流程 |
 
 ## 內容
 
@@ -39,7 +43,7 @@ Claude Code 的 CLAUDE.md、Skills 與 Subagents 最佳實踐指南。
 
 ### Skills 範例
 
-以下 Skills 改編自 [mattpocock/skills](https://github.com/mattpocock/skills)（實作設計樹、TDD 垂直切片等概念），並依據本儲存庫的最佳實踐指南重新整理：將範本抽出至 `templates/`、將參考資料移至 `reference/`，並補上 Gotchas 區段。
+以下 Skills 改編自 [mattpocock/skills](https://github.com/mattpocock/skills)，重新整理為：範本抽出至 `templates/`、參考資料移至 `reference/`，並補上 Gotchas 區段。
 
 | 範例 | 說明 | 用途 |
 |------|------|------|
@@ -135,6 +139,30 @@ Claude：（載入 skill-eval-toolkit，建測試案例，並行 spawn runs，
 - 研究型、審查型 Agent 設計模板
 - Hub-and-Spoke 架構模式
 - Early Victory Problem 與緩解策略
+
+## 關於作者 / 接案服務
+
+<!-- TODO: 替換為你的實際連結和內容 -->
+
+我是 **dianyike**，經營**典億創研工作室**，獨立接案工程師。
+
+| 服務項目 | 說明 |
+|---------|------|
+| 網頁設計與開發 | 響應式網站、Landing Page、後台管理系統 |
+| 爬蟲自動化 | 資料擷取、定時排程、反爬對策 |
+| API 串接與整合 | 第三方 API 對接、資料同步、Webhook 設計 |
+
+有合作需求歡迎聯繫：
+
+- [個人網站](https://dianyistudio.com)
+- [Threads](https://threads.net/@dianyike1013)
+- [Email](mailto:service@dianyistudio.com)
+
+## 致謝與參考來源
+
+本儲存庫的內容彙整自 Anthropic 官方文件、社群文章與熱門 GitHub 儲存庫，相關觀點與設計模式歸功於原作者。我做的是中文化、結構化整理，並加入自己的實戰經驗與決策框架。
+
+Skills 範例改編自 [mattpocock/skills](https://github.com/mattpocock/skills)，依據本儲存庫的最佳實踐指南重新整理。
 
 ## License
 
