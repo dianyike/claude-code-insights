@@ -49,9 +49,7 @@ Run the smallest relevant verification (test, build, lint, or manual check) befo
 
 ## Clean Up After Yourself
 
-Remove temporary files, debug logs, and scratch code when the task is complete. Add a "clean up temp files after task" step to your plan when generating intermediate artifacts.
-
-Why: Leftover temp files accumulate and confuse future sessions.
+Remove temporary files, debug logs, and scratch code when the task is complete.
 
 ## Git for State Awareness
 

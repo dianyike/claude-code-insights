@@ -4,8 +4,6 @@
 
 Create new objects instead of mutating existing ones.
 
-Why: Immutable data prevents hidden side effects, makes debugging easier, and enables safe concurrency.
-
 ```
 // Pseudocode
 update(original, field, value) → returns new copy with change  ✓
@@ -35,7 +33,5 @@ Why: Internal code and framework guarantees can be trusted. Validation effort be
 
 ## Syntax Preferences
 
-- Prefer `function` keyword over arrow functions for components and top-level functions
-- Use if/else or switch instead of nested ternaries
 - Comments explain **why**, not what (skip `// increment counter`)
 
