@@ -1,5 +1,11 @@
 # Workflow Rules
 
+## Language Rules
+
+- Write **rule files**, **subagents**, **MCP configs**, **claude.md**, and **skills** in **English**
+- Reply to the user in **Traditional Chinese (zh-TW)**
+- All frontend-facing text uses **Traditional Chinese (zh-TW)**
+
 ## Critical Thinking
 
 Analyze intent and logic before implementing. When requirements contain contradictions or ambiguity, surface them immediately with:

@@ -4,7 +4,9 @@ Enforceable constraints — apply with pragmatism (see `pragmatism.md` for risk-
 
 ## 1. Prefer Shared Tool Libraries
 
-Centralize critical logic — search the existing codebase before creating any new utility. If a shared utility exists, use it; if it's missing functionality, extend it.
+Centralize critical logic when adding new code — search the existing codebase before creating any new utility. If a shared utility exists, use it; if it's missing functionality, extend it.
+
+This rule governs new code. When fixing existing code, duplication you notice in passing is not a trigger to refactor — defer to Rule #3.
 
 Why: Duplicated logic across agents/skills/modules drifts out of sync and creates subtle bugs.
 
