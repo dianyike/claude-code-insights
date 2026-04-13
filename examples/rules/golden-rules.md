@@ -34,6 +34,13 @@ User: "Fix the null check in parseConfig"
 # Bad
 User: "Fix the null check in parseConfig"
 → Fix the null check + refactor the module + add JSDoc + create a utility
+
+# Borderline — how to decide
+User: "Add a retry to the API call in fetchUser"
+→ Add the retry. Don't also add circuit breaker, timeout config,
+  or retry-count parameter "while you're there."
+→ If the retry without a timeout creates a real issue (security/correctness),
+  flag it to the user — don't silently skip it, but don't silently add it either.
 ```
 
 ## 4. Give Context With Instructions

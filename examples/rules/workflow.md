@@ -33,15 +33,11 @@ Assume the function signature → write code that doesn't compile
 
 Lead with the answer or action. Skip environment explanations, definitions, and background context the user already knows.
 
-## TDD Mindset
+## When Commands Fail
 
-For code changes with clear expected behavior, define the verification method before writing implementation. Use RED → GREEN → REFACTOR when it fits the task. See `testing.md` for details.
+Read the error → analyze root cause → fix. Follow the diagnostic chain.
 
-## Retry Discipline — Rule of Three
-
-When a retry fails twice, stop and perform root-cause analysis before the next attempt. Diagnose first, act second.
-
-Why: Blind retries waste tokens and often make things worse. Reading the error message is faster than guessing.
+**Rule of Three**: if a retry fails twice, stop and perform root-cause analysis before the next attempt. Blind retries waste tokens and often make things worse.
 
 ## Think Before Act
 
@@ -63,6 +59,3 @@ Use `git status` and `git diff` to stay aware of what has changed. Only create c
 
 Why: Git is more reliable than session memory for tracking state, but unsolicited commits create noise and side effects.
 
-## Error Handling
-
-When a command fails: read the error → analyze root cause → fix. Follow the diagnostic chain.

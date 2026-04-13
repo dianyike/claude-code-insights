@@ -24,9 +24,11 @@ When choosing a lower-priority rule over a higher one, leave a reason at the dec
 
 Why: Without explicit priority, AI agents systematically default to the most conservative rule (typically security or correctness), which produces over-engineering — the exact failure mode Golden Rule #3 exists to prevent.
 
-### Worked Example
+### Worked Examples
 
 While fixing a bug in an internal function, you notice the boundary layer lacks input validation. Apply priorities: is it a security issue? If yes, #1 wins — fix it. If it's just code quality, #2 (user intent) beats #4 (code quality) — leave it, optionally flag to the user.
+
+User says: "I know this edge case won't happen in our setup, skip it." Apply priorities: #2 (user intent) beats #3 (correctness) — don't handle the edge case. Exception: if the "edge case" is actually a security hole, #1 overrides — flag it, don't silently skip.
 
 ## Exception Protocol
 

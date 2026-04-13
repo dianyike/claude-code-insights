@@ -29,6 +29,8 @@ Validate at system boundaries (user input, external APIs, file content):
 - Use schema-based validation where available
 - Fail fast with clear error messages
 
+For external API access specifically (typed SDKs, response schema validation), see Golden Rule #2.
+
 Why: Internal code and framework guarantees can be trusted. Validation effort belongs at the edges where untrusted data enters.
 
 ## Syntax Preferences
@@ -37,6 +39,3 @@ Why: Internal code and framework guarantees can be trusted. Validation effort be
 - Use if/else or switch instead of nested ternaries
 - Comments explain **why**, not what (skip `// increment counter`)
 
-## Code Quality Principles
-
-Aim for readable, well-named code with proper error handling and immutable patterns. These are quality signals to be aware of — not triggers for refactoring code that wasn't part of your task.
