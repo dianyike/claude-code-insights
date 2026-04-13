@@ -41,6 +41,12 @@
 |------|------|------|
 | [examples/npm-supply-chain-defense](examples/npm-supply-chain-defense) | npm 供應鏈三層防禦 — `.npmrc` 腳本封鎖 + PreToolUse Hook 檢查（registry、OSV.dev、版本解析、CLI 語法驗證）+ Semgrep 供應鏈掃描，附 42 個回歸測試 | 進階 |
 
+### Rules 範例
+
+| 範例 | 說明 | 難度 |
+|------|------|------|
+| [examples/rules](examples/rules) | 經實戰驗證的 `.claude/rules/` 入門套件 — 6 份規則檔 + 在地化模板。核心特色是 **pragmatism 層**（以風險分級的後設規則控制執行強度）、violation signals 自偵測機制，以及每條規則都附「Why」讓 Claude 理解意圖而非死守字面。可直接複製到任何專案使用。 | 入門 |
+
 ### Skills 範例
 
 以下 Skills 改編自 [mattpocock/skills](https://github.com/mattpocock/skills)，重新整理為：範本抽出至 `templates/`、參考資料移至 `reference/`，並補上 Gotchas 區段。

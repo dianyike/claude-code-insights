@@ -1,0 +1,41 @@
+# Golden Rules
+
+Enforceable constraints — apply with pragmatism (see `pragmatism.md` for risk-tier scoping).
+
+## 1. Prefer Shared Tool Libraries
+
+Centralize critical logic — search the existing codebase before creating any new utility. If a shared utility exists, use it; if it's missing functionality, extend it.
+
+Why: Duplicated logic across agents/skills/modules drifts out of sync and creates subtle bugs.
+
+**Violation signal**: Two or more files containing functionally identical code.
+
+## 2. Validated External Access
+
+Route all external data access through schema validation or strongly-typed SDKs. Prefer typed SDK clients over raw HTTP calls. Fail fast on unexpected response shapes.
+
+Why: Unvalidated hand-crafted payloads to external APIs are a top source of runtime surprises and security issues.
+
+**Violation signal**: Raw `fetch`/`curl` to external services without schema validation on both request and response.
+
+## 3. Only Do What's Asked
+
+Implement exactly what was requested. A bug fix is a bug fix — skip the surrounding cleanup, extra configurability, and speculative abstractions. Three similar lines are better than a premature helper.
+
+Why: Overengineering is the #1 trap with capable models. Extra files, extra abstractions, and "while I'm here" improvements create review burden and unintended side effects.
+
+```
+# Good
+User: "Fix the null check in parseConfig"
+→ Fix the null check. Done.
+
+# Bad
+User: "Fix the null check in parseConfig"
+→ Fix the null check + refactor the module + add JSDoc + create a utility
+```
+
+## 4. Give Context With Instructions
+
+When writing prompts, instructions, or rules — explain *why*, not just *what*. Use 3-5 examples when you need precise format control.
+
+Why: Claude is better at following the spirit of a rule when it understands the rationale. Examples are the most reliable way to control output format.

@@ -41,6 +41,12 @@ The three guides cross-reference each other. Recommended reading order: CLAUDE.m
 |---------|-------------|------------|
 | [examples/npm-supply-chain-defense](examples/npm-supply-chain-defense) | npm supply chain three-layer defense — `.npmrc` script blocking + PreToolUse Hook checks (registry, OSV.dev, version resolution, CLI syntax validation) + Semgrep supply chain scanning. Includes 42 regression tests | Advanced |
 
+### Rules Examples
+
+| Example | Description | Difficulty |
+|---------|-------------|------------|
+| [examples/rules](examples/rules) | Production-tested `.claude/rules/` starter kit — 6 rule files + localization template. Features a **pragmatism layer** (risk-tier meta-rule that scopes enforcement), violation signals for self-detection, and a "Why" line on every rule so Claude follows intent, not just the letter. Ready to copy into any project. | Beginner |
+
 ### Skills Examples
 
 The following Skills are adapted from [mattpocock/skills](https://github.com/mattpocock/skills), reworked with templates extracted to `templates/`, reference materials moved to `reference/`, and Gotchas sections added.
