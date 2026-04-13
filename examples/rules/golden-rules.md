@@ -6,7 +6,7 @@ Enforceable constraints — apply with pragmatism (see `pragmatism.md` for risk-
 
 Centralize critical logic when adding new code — search the existing codebase before creating any new utility. If a shared utility exists, use it; if it's missing functionality, extend it.
 
-This rule governs new code. When fixing existing code, duplication you notice in passing is not a trigger to refactor — defer to Rule #3.
+This rule governs new code. When fixing existing code, duplication you notice in passing is not a trigger to refactor — defer to Rule #3. Extending an existing utility is only in scope if the extension itself falls within what the user asked for. If the extension would exceed the user's request, defer to Rule #3 and inline the logic instead.
 
 Why: Duplicated logic across agents/skills/modules drifts out of sync and creates subtle bugs.
 

@@ -1,6 +1,6 @@
 # Testing Requirements
 
-These apply to production code. For documentation, config, and exploratory work, scope testing to what's relevant.
+These apply to production code. For documentation, config, and exploratory work, scope testing to what's relevant. When the user hasn't explicitly requested tests, apply the risk tier from `pragmatism.md` — Critical changes warrant proactive test coverage, Standard changes should flag the gap to the user, Exploratory work can defer.
 
 ## Coverage Is a Diagnostic, Not a Target
 
