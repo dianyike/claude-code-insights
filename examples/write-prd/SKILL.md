@@ -64,7 +64,7 @@ Iterate until the user approves.
 
 ### 5. Write the PRD file
 
-Create `docs/prds/` if it doesn't exist. Write as `docs/prds/<feature-name>.md`.
+Create `docs/prds/` if it doesn't exist. Write to `docs/prds/YYYY-MM-DD-<feature-name>.md`.
 
 - Ask the user to confirm the filename before writing
 - If decision records from grill-me exist, add them to the References section
@@ -74,7 +74,7 @@ Create `docs/prds/` if it doesn't exist. Write as `docs/prds/<feature-name>.md`.
 If this skill is being executed by a subagent, eval harness, or any caller that provides an explicit output path or workspace, distinguish between **draft artifacts** and the **canonical PRD file**:
 
 - **Draft artifacts**: Write the PRD draft and any handoff notes to the caller-provided output location
-- **Canonical PRD file**: Only write `docs/prds/<feature-name>.md` after explicit user confirmation of the filename in the current conversation
+- **Canonical PRD file**: Only write `docs/prds/YYYY-MM-DD-<feature-name>.md` after explicit user confirmation of the filename in the current conversation
 - **No silent promotion**: Do not treat a draft written to an eval workspace as the canonical PRD
 - **Handoff clarity**: If canonical write is blocked on confirmation, say so explicitly and include the proposed filename/path
 

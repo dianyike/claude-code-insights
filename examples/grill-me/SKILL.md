@@ -8,6 +8,8 @@ description: >
 allowed-tools: Read, Grep, Glob, Write
 ---
 
+# Grill Me
+
 Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
 
 If a question can be answered by exploring the codebase, explore the codebase instead.
@@ -57,7 +59,7 @@ Before diving into details, establish the risk tier first — it determines how 
 
 ## Output
 
-When all branches are resolved, write a decision record to `docs/decisions/YYYY-MM-DD-<topic>.md`.
+When all branches are resolved, write to `docs/decisions/YYYY-MM-DD-<topic>.md`.
 
 - Use the template at [templates/decision-record.md](templates/decision-record.md)
 - If `docs/decisions/` does not exist, create it

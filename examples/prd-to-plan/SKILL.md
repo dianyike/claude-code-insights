@@ -2,7 +2,7 @@
 name: prd-to-plan
 description: >
   Turn a PRD into a multi-phase implementation plan using tracer-bullet
-  vertical slices, saved as a local Markdown file in ./plans/. Use when
+  vertical slices, saved as a local Markdown file in docs/plans/. Use when
   user wants to break down a PRD, create an implementation plan, plan
   phases from a PRD, or mentions "tracer bullets".
 allowed-tools: Read, Write, Grep, Glob
@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Grep, Glob
 
 # PRD to Plan
 
-Break a PRD into a phased implementation plan using vertical slices (tracer bullets). Output is a Markdown file in `docs/plans/`.
+Break a PRD into a phased implementation plan using vertical slices (tracer bullets).
 
 ## Process
 
@@ -81,7 +81,7 @@ Iterate until the user approves the breakdown.
 
 ### 6. Write the plan file
 
-Create `./plans/` if it doesn't exist. Write the plan as a Markdown file named after the feature (e.g. `./plans/user-onboarding.md`).
+Create `docs/plans/` if it doesn't exist. Write to `docs/plans/YYYY-MM-DD-<feature-name>.md`.
 
 - Use the template at [templates/plan.md](templates/plan.md)
 - Ask the user to confirm the filename before writing
@@ -91,7 +91,7 @@ Create `./plans/` if it doesn't exist. Write the plan as a Markdown file named a
 - [ ] All PRD user stories mapped to at least one phase
 - [ ] Each phase is a vertical slice (touches all layers end-to-end)
 - [ ] User approved the phase breakdown
-- [ ] Plan file written to `./plans/` with confirmed filename
+- [ ] Plan file written to `docs/plans/` with confirmed filename
 - [ ] If an optional review pass was used, material findings were either incorporated or surfaced to the user
 
 ## Gotchas
