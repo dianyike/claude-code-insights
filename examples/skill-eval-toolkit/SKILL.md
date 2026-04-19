@@ -95,6 +95,8 @@ Write an `eval_metadata.json` for each test case (assertions can be empty for no
 
 Don't just wait — draft quantitative assertions for each test case and explain them to the user. Good assertions are objectively verifiable and have descriptive names that read clearly in the benchmark viewer.
 
+Sanity-check coverage: outcome / process / style / efficiency. An empty axis is usually a blind spot, not a deliberate skip.
+
 Subjective skills (writing style, design quality) are better evaluated qualitatively — don't force assertions onto things that need human judgment.
 
 Update the `eval_metadata.json` files and `evals/evals.json` with assertions once drafted.
