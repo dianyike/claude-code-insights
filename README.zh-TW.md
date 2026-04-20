@@ -59,7 +59,7 @@
 | [examples/prd-to-plan](examples/prd-to-plan) | PRD 轉實作計畫 — 將需求拆成 tracer bullet 垂直切片，輸出至 `./plans/`，並可選擇加入 Codex 審核高風險計畫 | 需求拆解與階段規劃 |
 | [examples/write-a-skill](examples/write-a-skill) | Skill Builder 後設 Skill — 內容類型決策、呼叫控制、安全配置、Gotchas 迭代回饋循環，含 eval 工作流參考 | 建立新 Skill |
 | [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill 評測工具包 — eval 驅動測試、量化基準測試、盲測 A/B 比較、description 觸發優化，以及 SKILL.md body 的 autopilot keep/revert 迴圈 | 驗證與優化現有 Skill |
-| [examples/frontend-design](examples/frontend-design) | Frontend Design — 拒絕 AI 罐頭美學的高品質前端介面。大膽創作自由搭配不可妥協的基線（字級地板、元素遮擋防護、無障礙）。含 SKILL.md + [Glassmorphism Wallet](examples/frontend-design/glassmorphism-wallet/) 毛玻璃數位錢包（純 CSS 信用卡、翻轉動畫、生物發光背景球體）展示 | 打造有辨識度的前端介面 |
+| [examples/frontend-design](examples/frontend-design) | Frontend Design — 排版導向的介面設計 skill。3 層決策流程（Purpose → Structure → Elements）、10 種 grid catalog、design token scale 表，以及可從參考圖累積的**風格庫**。透過 bundled script + PreToolUse hook 強制「先建風格檔再寫設計稿」的順序，完成前設計輸出會被擋下。附 [cafe-kantsu demo](examples/frontend-design/test-output/index.html)（放在 `test-output/` 下） | 打造有辨識度的前端介面 |
 
 **個人開發工作流程**：`/grill-me`（質詢設計）→ `/write-prd`（撰寫 PRD）→ `/prd-to-plan`（拆成階段，可選擇用 Codex 審核）→ `/tdd`（逐步實作）
 
@@ -116,6 +116,38 @@ Claude：（載入 skill-eval-toolkit，建測試案例，並行 spawn runs，
 ```
 
 > **什麼時候用哪個**：如果問題是「這個 skill 該怎麼寫？」→ `write-a-skill`。如果問題是「這個 skill 到底好不好用？」→ `skill-eval-toolkit`。大部分 skill 從前者起步，需要量化驗證時再引入後者。
+
+#### frontend-design — 排版導向 + 強制流程的設計 Skill
+
+用於打造**有辨識度且可累積**的前端介面。結合三個架構模式：
+
+**3 層決策外殼（decision-shell）** — SKILL.md 保持精簡，references 按需載入：
+
+- **Layer 1 Purpose** — reader intent / success criteria / information density（離散選項，非模糊形容詞）
+- **Layer 2 Structure** — 從 [`references/layout-judgment.md`](examples/frontend-design/references/layout-judgment.md) 的 10 種 grid catalog 選擇網格：Manuscript、Column、Modular、Hierarchical、Baseline、Bento、Asymmetric Split、Centered Monument、Broken/Off-Grid Editorial、Rail + Stage。每個條目含 use-when / avoid-when / core rules / mobile-collapse 行為
+- **Layer 3 Elements** — [`references/design-tokens.md`](examples/frontend-design/references/design-tokens.md) 的 spacing / type / line-height scale：4-base / 8-base / Fibonacci 間距、1.125–1.778 字級比，並附對應 grid 的選擇建議
+
+**可累積的風格庫** — 參考圖變成長期可用的資產：
+
+- 使用者丟 N 張參考圖 → Claude 跨圖分析 grid / 色彩 / 字體 / 視覺 motif
+- 產出 `references/styles/<slug>.md`（11 個結構化欄位：when-to-use、grid 搭配、色票、字體 + import 方式 + fallback stack、間距節奏、視覺簽名、avoid 清單⋯）
+- 下一個 session 只要說「用 `<slug>` 風格」即可載入當 brief 限制，不用重新解釋
+
+**Script + PreToolUse hook 強制流程** — 純文字指令容易被 AI 聰明地重排；這層讓「應該」變成「不能」：
+
+- [`scripts/style.sh new <slug>`](examples/frontend-design/scripts/style.sh) 建立含 `??` 佔位符的骨架並寫入 marker 檔
+- PreToolUse hook（註冊在 SKILL.md frontmatter）攔截 design-output 檔案（HTML/CSS/JSX/TSX/Vue/Svelte 在 `demos/`、`app/`、`pages/`、`src/`、`components/`、`public/` 下）的 Write/Edit；`??` 未清空前會被擋
+- `scripts/style.sh done` 驗證完整性後才清除 marker
+
+```
+你：「設計一個咖啡館 landing page」+ [3 張參考圖]
+Claude：（跑 style.sh new → 跨圖分析 → 填風格檔 → 給你審核 →
+         更新 INDEX → style.sh done → 寫 HTML）
+```
+
+這層強制架構針對一個常見的 skill 失效模式：當 skill 指令說「先做 X，再做 Y」，AI 常把它當建議而重排順序。用 bash hook 把順序變成不可協商，實測可顯著提升流程遵守度。
+
+完整範例見 [examples/frontend-design/test-output/index.html](examples/frontend-design/test-output/index.html)（**cafe-kantsu** demo），用的是從 3 張日系扁平化參考圖萃取的 `japanese-editorial-flat` 風格。
 
 > **Gotchas 是 Skill 的靈魂**：一個 Skill 最有價值的往往不是教學內容，而是團隊實際踩過的坑。每次 Skill 執行遇到非預期失敗時，都把失敗模式寫回 Gotchas；這個回饋循環會讓 Skill 隨著使用愈來愈準。詳見 [skills-best-practices.zh-TW.md § 4.3](skills-best-practices.zh-TW.md#43-構建-gotchas-部分)。
 

@@ -1,11 +1,38 @@
 ---
 name: frontend-design
 description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.
+hooks:
+  PreToolUse:
+    - matcher: Write|Edit
+      command: bash "${CLAUDE_SKILL_DIR}/scripts/style.sh" check
 ---
 
 This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.
 
 The user provides frontend requirements: a component, page, application, or interface to build. They may include context about the purpose, audience, or technical constraints.
+
+## Workflow
+
+Design happens in three layers — Purpose → Structure → Elements. Walk them in order; never skip ahead. Each layer's output constrains the next.
+
+1. **Purpose** — Before any visual choice, answer the Layer 1 triad explicitly in your response: reader intent, success criteria, information density. For any layout-led, page, hero, landing, or editorial task, use the discrete options defined in `references/layout-judgment.md` (Layer 1) — vague answers must trigger a clarifying question to the user. See also "Design Thinking" below.
+2. **Structure** — Choose a grid before placing any element. For layout-led, editorial, brand-heavy, or Awwwards-quality typographic work, read `references/layout-judgment.md` for the grid catalog and selection criteria.
+3. **Elements** — Apply typography, color, spacing. See "Frontend Aesthetics Guidelines" below; use `references/design-tokens.md` for spacing scales, type ramps, line-height, and other numerical decisions.
+4. **Edit Pass** — See "The Editing Pass" at the end of this file.
+
+**Reusable styles**: If the user references a saved style by name (e.g., "use editorial-minimal"), check `references/styles/INDEX.md` first and load the matching style file before designing. After completing a design the user explicitly approves, ask whether to save it as a reusable style — if yes, follow the template in `INDEX.md`. **When a saved style and the current brief conflict, the brief wins** unless the user explicitly says to preserve the style strictly.
+
+**Reference images**: When the user provides reference images of a target style, run the procedure below in order. Do NOT reorder. Do NOT skip to design.
+
+1. Cross-analyze all images together (single-image inferences are unreliable). Identify: grid type (match to one of the 10 in `references/layout-judgment.md`), color palette, typography characteristics, spacing rhythm, and 2-3 repeated visual motifs.
+2. Run: `bash ${CLAUDE_SKILL_DIR}/scripts/style.sh new <slug>` — this creates a style-file skeleton at `references/styles/<slug>.md` with all fields set to `??`, and activates the style-extraction guard.
+3. Edit the generated file: replace every `??` with the value from your analysis. Leave `??` only where you genuinely need user confirmation, and call it out explicitly.
+4. Show the filled style to the user for approval or edits.
+5. Add a one-line entry for the new style to `references/styles/INDEX.md` in alphabetical order. Do this while the guard is still active so INDEX hygiene isn't forgotten after the guard clears.
+6. After user approves (and every `??` is resolved), run: `bash ${CLAUDE_SKILL_DIR}/scripts/style.sh done`.
+7. Only now begin designing. The saved style is the brief constraint for the session.
+
+**Enforcement**: This skill registers a PreToolUse hook (see frontmatter) that blocks Write/Edit on design-output files (HTML/CSS/JSX/TSX/Vue/Svelte under `demos/`, `test-output/`, `app/`, `pages/`, `src/`, `components/`, `public/`) while the guard is active. If a Write is blocked, return to step 3. Do not attempt to bypass the hook by deleting the marker file — the guard exists to protect the source of truth.
 
 ## Design Thinking
 
@@ -27,9 +54,9 @@ Then implement working code (HTML/CSS/JS, React, Vue, etc.) that is:
 ## Frontend Aesthetics Guidelines
 
 Focus on:
-- **Typography**: Choose fonts that are beautiful, unique, and interesting. Avoid generic fonts like Arial and Inter; opt instead for distinctive choices that elevate the frontend's aesthetics; unexpected, characterful font choices. Pair a distinctive display font with a refined body font. **Minimum readable sizes**: 14px (0.875rem) for captions, metadata, and small labels; 16px (1rem) for body text. There is no maximum — titles can be as enormous as the design demands. Maintain a clear type hierarchy (typically 4–6 distinct sizes) rather than inventing arbitrary sizes for each element. The scale itself is a creative choice; the floor is not. Use **text opacity variations** (e.g., 100% → 70% → 45%) as a hierarchy tool alongside size — primary content at full opacity, secondary at reduced, tertiary nearly muted. This creates breathing room without needing more font sizes.
+- **Typography**: Choose fonts that are beautiful, unique, and interesting. Avoid generic fonts like Arial and Inter; opt instead for distinctive choices that elevate the frontend's aesthetics; unexpected, characterful font choices. Pair a distinctive display font with a refined body font. **Minimum readable sizes**: 16px (1rem) for body text (mixed-case reading copy); 14px (0.875rem) for captions and inline meta; **11px only for ALL-CAPS labels with tracking ≥ 0.15em** (editorial convention — wide tracking preserves legibility at smaller sizes). Never go below 11px for any text a user is expected to read. There is no maximum — titles can be as enormous as the design demands. Maintain a clear type hierarchy (typically 4–6 distinct sizes) rather than inventing arbitrary sizes for each element. The scale itself is a creative choice; the floor is not. Use **text opacity variations** (e.g., 100% → 70% → 45%) as a hierarchy tool alongside size — primary content at full opacity, secondary at reduced, tertiary nearly muted. This creates breathing room without needing more font sizes. Verify the resulting contrast against the actual background; never reduce opacity on essential reading copy, primary CTAs, or interactive labels.
 - **Color & Theme**: Commit to a cohesive aesthetic. Use CSS variables for consistency. Dominant colors with sharp accents outperform timid, evenly-distributed palettes.
-- **Motion**: Use animations for effects and micro-interactions. Prioritize CSS-only solutions for HTML. Use Motion library for React when available. Focus on high-impact moments: one well-orchestrated page load with staggered reveals (animation-delay) creates more delight than scattered micro-interactions. Use scroll-triggering and hover states that surprise.
+- **Motion**: Motion is opt-in. Default to static composition — well-executed layout and typography deliver more impact than motion. Only add motion when (a) the user asks for it, (b) interactive feedback would be unclear without it (focus, hover, error, loading states), or (c) the chosen aesthetic explicitly requires it. When motion is used: prioritize CSS-only for HTML, Motion library for React; one well-orchestrated page load beats scattered micro-interactions.
 - **Spatial Composition**: Unexpected layouts. Asymmetry. Overlap. Diagonal flow. Grid-breaking elements. Generous negative space OR controlled density. **Never let decorative or structural elements unintentionally obscure content-carrying elements** (dates, CTAs, metadata). Overlap is a deliberate compositional tool — if an element carries information, it must remain legible. Before finalizing layout, verify every text element is readable against its actual stacking context, not just in theory.
 - **Visual Rhyming**: Repeat small visual motifs — a border radius, a gradient angle, a decorative shape, a line weight — across unrelated elements to create subconscious coherence. The repetition should feel discovered, not forced. Pick 2-3 motifs and echo them throughout; this is what separates "collection of nice elements" from "designed system."
 - **Backgrounds & Visual Details**: Create atmosphere and depth rather than defaulting to solid colors. Add contextual effects and textures that match the overall aesthetic. Apply creative forms like gradient meshes, noise textures, geometric patterns, layered transparencies, dramatic shadows, decorative borders, custom cursors, and grain overlays.
