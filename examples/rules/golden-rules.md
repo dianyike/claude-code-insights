@@ -8,6 +8,8 @@ Centralize critical logic when adding new code — search the existing codebase 
 
 This rule governs new code. When fixing existing code, duplication you notice in passing is not a trigger to refactor — defer to Rule #3. Extending an existing utility is only in scope if the extension itself falls within what the user asked for. If the extension would exceed the user's request, defer to Rule #3 and inline the logic instead.
 
+Search depth should scale with change size. A one-line fix does not warrant a repo-wide audit; reach for shared logic that the task already touches, and stop there.
+
 Why: Duplicated logic across agents/skills/modules drifts out of sync and creates subtle bugs.
 
 **Violation signal**: Two or more files containing functionally identical code.
@@ -47,4 +49,4 @@ User: "Add a retry to the API call in fetchUser"
 
 When writing prompts, instructions, or rules — explain *why*, not just *what*. Use 3-5 examples when you need precise format control.
 
-Why: Claude is better at following the spirit of a rule when it understands the rationale. Examples are the most reliable way to control output format.
+Why: Rules without rationale get pattern-matched and misapplied in adjacent cases; examples only improve format reliability when they resolve a specific ambiguity, otherwise they bias the model toward superficial imitation.

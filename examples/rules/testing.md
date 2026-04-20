@@ -1,6 +1,6 @@
 # Testing Requirements
 
-These apply to production code. For documentation, config, and exploratory work, scope testing to what's relevant. When the user hasn't explicitly requested tests, apply the risk tier from `pragmatism.md` — Critical changes warrant proactive test coverage, Standard changes should flag the gap to the user, Exploratory work can defer.
+These apply to production code. For documentation, non-production config, and exploratory work, scope testing to what's relevant. When the user hasn't explicitly requested tests, apply the risk tier from `pragmatism.md` — Critical changes warrant proactive test coverage, Standard changes should flag the gap to the user, Exploratory work can defer.
 
 ## Coverage Is a Diagnostic, Not a Target
 
@@ -42,3 +42,5 @@ assert result == '{"port":3000,"host":"localhost","debug":false}'
 1. Check test isolation
 2. Verify mocks are correct
 3. Fix the implementation, not the tests (unless the tests are wrong)
+
+If the same test fails twice after fix attempts, apply `workflow.md`'s Rule of Three before trying again.

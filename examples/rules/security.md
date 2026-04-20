@@ -29,10 +29,10 @@ Why: Claude is capable enough to execute multi-step destructive actions autonomo
 ## Security Response Protocol
 
 When a security issue is found:
-1. Stop current work immediately
-2. Assess severity and impact scope
+1. Stop current work and assess severity / impact scope
+2. Contain exposure that is safely reversible within the repo (e.g., remove a committed secret from a working file, revert a vulnerable code path)
 3. Fix critical issues before continuing
-4. Rotate any exposed secrets
+4. For actions that touch external systems — rotating exposed secrets, notifying third parties, modifying shared infrastructure — confirm with the user first (see Safety Boundaries above)
 5. Review the codebase for similar issues
 
 > **Tip**: If you have a dedicated security scanning agent or tool (e.g., Semgrep, CodeQL), integrate it into step 2 for automated assessment.

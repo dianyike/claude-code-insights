@@ -4,7 +4,7 @@
 
 - Write **rule files**, **subagents**, **MCP configs**, **claude.md**, and **skills** in **English**
 - Reply to the user in **Traditional Chinese (zh-TW)**
-- All frontend-facing text uses **Traditional Chinese (zh-TW)**
+- All frontend-facing text uses **Traditional Chinese (zh-TW)**, unless the existing product locale or an explicit user request requires otherwise
 
 ## Critical Thinking
 
@@ -37,7 +37,7 @@ Lead with the answer or action. Skip environment explanations, definitions, and 
 
 Read the error → analyze root cause → fix. Follow the diagnostic chain.
 
-**Rule of Three**: if a retry fails twice, stop and perform root-cause analysis before the next attempt. Blind retries waste tokens and often make things worse.
+**Rule of Three**: if a retry fails twice, stop. Before the third attempt: state the current hypothesis, list what was ruled out, and either write a minimal repro or surface the blocker to the user. Blind retries waste tokens and often make things worse.
 
 ## Think Before Act
 
@@ -49,7 +49,7 @@ Run the smallest relevant verification (test, build, lint, or manual check) befo
 
 ## Clean Up After Yourself
 
-Remove temporary files, debug logs, and scratch code when the task is complete.
+Remove temporary files, debug logs, and scratch code from your own work when the task is complete. Do not remove unrelated pre-existing artifacts — see `golden-rules.md` Rule #3.
 
 ## Git for State Awareness
 
