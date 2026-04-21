@@ -6,6 +6,36 @@ These are not "the answers" — they are calibrated options. Pick a scale that m
 
 ---
 
+## Naming conventions
+
+Token names are the interface between design decisions and the code that consumes them. Bad names lock the system to a specific visual moment; good names survive redesigns.
+
+### Four-layer architecture
+
+| Layer | Purpose | Example |
+|-------|---------|---------|
+| Primitives | Raw values, never used directly by components | `blue-50`, `blue-900`, `space-16` |
+| Semantics | Purpose-led aliases that components reference | `--color-primary`, `--color-danger`, `--space-section` |
+| Components | Scoped to a specific UI element | `--button-bg`, `--card-border`, `--input-focus` |
+| Pages | Page-specific overrides (use sparingly) | `--hero-bg`, `--footer-divider` |
+
+Components reference semantics; semantics reference primitives. A component token should not hardcode a primitive value directly — if it does, rename the semantic or add one.
+
+### Rules
+
+- **Never name by appearance.** `--color-red-button` rots the moment the button turns blue. Use `--color-button-danger`.
+- **Don't over-generalize.** `--color-1` carries no meaning — whoever edits next will guess wrong.
+- **Don't over-specify.** `--color-signup-button-hover-large-screen` is a dead end. Keep tokens reusable.
+- **Primitives use a brightness scale.** `blue-50` (lightest) → `blue-900` (darkest), Adobe Spectrum style. Numeric steps make relationships legible.
+
+### Anti-patterns to reject
+
+- `primary` — primary what? Color? Button? Heading?
+- `dark-gray` — what does this become in dark mode?
+- `button-color` — split into `button-bg`, `button-text`, `button-border` so each is addressable
+
+---
+
 ## Spacing scales
 
 Pick one base unit and stick with it. The base unit determines the rhythm of the entire interface.
@@ -116,6 +146,28 @@ Match the ratio to the grid:
 
 ---
 
+## Readability (measure / line length)
+
+Line length — often called *measure* — controls how easily the eye tracks from the end of one line back to the start of the next. Too long and the eye loses its place; too short and reading feels choppy.
+
+| Context | Characters per line (CPL) |
+|---------|---------------------------|
+| Desktop body text | 45–75 |
+| Mobile body text | 35–50 |
+| Ideal for long-form reading | 50–60 |
+
+### How to enforce
+
+- Cap `max-width` on text blocks using `ch` units: `max-width: 65ch` holds across most body sizes.
+- When the column is wider than the measure allows, indent the text block or split into multi-column.
+- Verify with real content at the chosen size — not lorem ipsum, which has artificial word lengths.
+
+### Relation to line-height
+
+Longer lines need more line-height to prevent the eye from losing its row. If a layout pushes CPL above 75, raise line-height toward 1.7. If CPL is short (40–50), line-height can stay around 1.5.
+
+---
+
 ## Line-height scales
 
 Line-height should match the role of the text, not the size.
@@ -220,8 +272,11 @@ The user has explicitly asked for layout-led, not motion-led design. These are m
 ## Validation checklist
 
 Before delivering, verify:
+- [ ] Tokens follow the four-layer naming structure (primitives → semantics → components)
+- [ ] No token name encodes appearance (no `-red-`, `-dark-`, `-large-screen-`, etc.)
 - [ ] Spacing values come from one scale (no ad-hoc pixel values)
 - [ ] Type scale uses one ratio; sizes derive from it (not invented)
+- [ ] Body line length 45–75 CPL desktop / 35–50 CPL mobile
 - [ ] Line-heights snap to baseline if Baseline Grid is in use
 - [ ] Body text ≥16px; captions ≥14px; all-caps tracked labels ≥11px; nothing readable below 11px
 - [ ] Single accent color used sparingly (appears on the focal element + at most one other element per viewport)

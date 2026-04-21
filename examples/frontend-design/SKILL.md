@@ -73,14 +73,17 @@ Creative boldness does not excuse broken fundamentals. These are not aesthetic c
 
 ### Accessibility
 
-- Contrast ratio ≥ 4.5:1 for body text, ≥ 3:1 for large text (≥ 24px). Verify against your actual background — gradients and textures don't get a free pass.
+- Contrast ratio ≥ 4.5:1 for body text, ≥ 3:1 for large text (≥ 24px). Verify against your actual background — gradients and textures don't get a free pass. Check contrast during the Elements phase, not at the end.
 - Touch targets ≥ 44×44px on interactive elements.
 - Visible focus indicators on every focusable element. `outline: none` without a replacement is never acceptable.
-- Never convey meaning through color alone. Semantic HTML: `<button>` for actions, `<a>` for navigation, headings in order.
+- Never convey meaning through color alone. Semantic HTML: `<button>` for actions (anything that changes state, submits, opens a dialog), `<a>` for navigation (anything that changes the URL or loads a new document). Link text must make sense out of context — never bare "click here" or "read more". Word count and verb-leading are useful heuristics for CTA copy, not the semantic rule.
+- For `prefers-reduced-motion`, icon buttons, skip links, and modal focus management, apply the patterns in `references/accessibility-core.md`.
 
 ### Interactive States
 
-Every interactive element must have at minimum: **Default → Hover → Focus → Disabled.** Inputs add **Error** (with visible message). Empty states and success confirmations must exist — never a blank void or silent completion. A bold visual design with broken interactive feedback feels unfinished.
+Every interactive element must have at minimum: **Default → Hover → Focus**, plus **Disabled** when the control can be disabled. Inputs add **Error** (with visible message). Empty states and success confirmations must exist — never a blank void or silent completion. A bold visual design with broken interactive feedback feels unfinished.
+
+**Disabled is a last resort.** Prefer keeping the control enabled and showing inline validation that explains what's wrong — a disabled button with no explanation is a dead end for the user. Only disable when the action is genuinely unavailable (waiting on upstream data, prerequisites not met). When you do disable, pick the right tool: native `disabled` removes the control from keyboard and assistive tech entirely (fine for form fields gated by a checkbox), while `aria-disabled="true"` keeps focus and announcement but requires you to guard activation in your handler. Use `aria-disabled` when the user needs to *hear why* the control is unavailable (e.g. a submit button waiting on validation); use native `disabled` when the inert state is self-explanatory. Never disable silently.
 
 ## The Editing Pass
 
@@ -88,6 +91,7 @@ After the first complete implementation, before delivering:
 
 1. Find the **weakest** element — the one that feels safe, generic, or forgettable. Ask: is this bold enough? Push it further or cut it entirely.
 2. Check that your focal point actually dominates. Squint at the screen — what do you see first? If the answer isn't your intended focal point, fix the hierarchy.
-3. Verify that boldness didn't break the baselines above. Contrast, focus states, touch targets — confirm them last, fix without compromising the vision.
+3. Verify that boldness didn't break the baselines above. Focus states, touch targets, and link text that stands on its own — confirm them last, fix without compromising the vision. Contrast should already have been checked during Elements; re-verify only if colors shifted during this pass.
+4. **Keyboard walk-through.** Tab through the entire surface with the mouse unplugged (or ignored) and verify: every interactive element is reachable in a sensible order, focus indicators are visible against their actual background, `Esc` closes modals and menus, `Enter` / `Space` activate the focused control, and focus returns to the trigger when a modal or popover closes.
 
 Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
