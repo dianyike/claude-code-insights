@@ -59,7 +59,6 @@ The following Skills are adapted from [mattpocock/skills](https://github.com/mat
 | [examples/prd-to-plan](examples/prd-to-plan) | PRD to Implementation Plan — breaks requirements into tracer bullet vertical slices, outputs to `./plans/`, with optional Codex review for high-risk plans | Requirements decomposition and phase planning |
 | [examples/write-a-skill](examples/write-a-skill) | Skill Builder Meta-Skill — content type decisions, invocation control, security configuration, Gotchas iteration loop. Includes eval workflow reference | Creating new Skills |
 | [examples/skill-eval-toolkit](examples/skill-eval-toolkit) | Skill Eval Toolkit — eval-driven testing, quantitative benchmarking, blind A/B comparison, description trigger optimization, and SKILL.md body autopilot keep/revert loop | Validating and optimizing existing Skills |
-| [examples/frontend-design](examples/frontend-design) | Frontend Design — layout-led skill for distinctive UI that avoids generic AI aesthetics. 3-layer decision flow (Purpose → Structure → Elements), 10-grid catalog, design-token scales, and a reusable **style library** populated from reference images. Enforces style-file-before-design with a bundled script + PreToolUse hook that blocks design-output writes until the style is complete. See the [cafe-kantsu demo](examples/frontend-design/test-output/index.html) under `test-output/` | Building distinctive frontend interfaces |
 
 **Solo Development Workflow**: `/grill-me` (interrogate the design) → `/write-prd` (write the PRD) → `/prd-to-plan` (break into phases, optionally review with Codex) → `/tdd` (implement one by one)
 
@@ -116,38 +115,6 @@ Claude: (loads skill-eval-toolkit, creates test cases, spawns parallel runs,
 ```
 
 > **When to use which**: If the question is "how should I structure this skill?" → `write-a-skill`. If the question is "is this skill actually working well?" → `skill-eval-toolkit`. Most skills start with the former and graduate to the latter when you need quantitative rigor.
-
-#### frontend-design — Layout-Led Design with Enforced Style Library
-
-Use when building distinctive, production-grade frontend interfaces that need **layout discipline and reusable style memory**, not just one-off visual flair. Combines three architectural patterns:
-
-**Three-layer decision framework (decision-shell)** — SKILL.md stays lean; references load on demand:
-
-- **Layer 1 Purpose** — reader intent / success criteria / information density (discrete options, not vague prose)
-- **Layer 2 Structure** — grid selection from a 10-grid catalog in [`references/layout-judgment.md`](examples/frontend-design/references/layout-judgment.md): Manuscript, Column, Modular, Hierarchical, Baseline, Bento, Asymmetric Split, Centered Monument, Broken/Off-Grid Editorial, Rail + Stage. Each entry includes use-when / avoid-when / core rules / mobile-collapse behaviour
-- **Layer 3 Elements** — spacing / type / line-height scales from [`references/design-tokens.md`](examples/frontend-design/references/design-tokens.md): 4-base / 8-base / Fibonacci spacing, 1.125–1.778 type ratios, with selection guidance per grid
-
-**Reusable style library** — reference images become persistent assets:
-
-- User drops N reference images → Claude cross-analyzes for grid / palette / typography / motifs
-- Produces a style file at `references/styles/<slug>.md` with 11 structured fields (when-to-use, grid pairing, color tokens, typography + import method + fallback stack, spacing rhythm, visual signature, avoid list, etc.)
-- Future sessions: `"use <slug>"` loads the style as a brief constraint — no re-explanation needed
-
-**Script + PreToolUse hook enforcement** — prose instructions get interpreted loosely; this layer turns "should" into "cannot":
-
-- [`scripts/style.sh new <slug>`](examples/frontend-design/scripts/style.sh) creates a style skeleton with `??` placeholders and activates a marker file
-- A PreToolUse hook (registered in SKILL.md frontmatter) intercepts Write/Edit on design-output files (HTML/CSS/JSX/TSX/Vue/Svelte under `demos/`, `app/`, `pages/`, `src/`, `components/`, `public/`) and blocks while any `??` remains
-- `scripts/style.sh done` validates completeness before clearing the marker
-
-```
-You: "Design a café landing page" + [3 reference images]
-Claude: (runs style.sh new → cross-image analysis → fills style file →
-         shows for approval → updates INDEX → style.sh done → writes HTML)
-```
-
-This enforcement layer addresses a subtle skill failure mode: when a skill says "first do X, then do Y", AI often treats the order as advisory and reorders. A bash hook makes the ordering non-negotiable, raising procedure compliance measurably across real runs.
-
-See [examples/frontend-design/test-output/index.html](examples/frontend-design/test-output/index.html) for a complete page (the **cafe-kantsu** demo) built using the `japanese-editorial-flat` style extracted from three Japanese flat-design references.
 
 > **Gotchas Are the Soul of a Skill**: The strongest signal in any Skill isn't the tutorial — it's the pitfalls the team has hit. Every time a Skill execution encounters an unexpected failure, write the failure pattern back into Gotchas — this feedback loop makes the Skill more accurate over time. See [skills-best-practices.md § 4.3](skills-best-practices.md#43-building-the-gotchas-section) for details.
 
